@@ -1,0 +1,15 @@
+@import './base.css';
+
+#app {
+  font-weight: normal;
+  display: flex;
+  flex-direction: column;
+}
+
+a:link {
+  text-decoration: none;
+}
+
+a:visited {
+  color: var(--text-color);
+}
