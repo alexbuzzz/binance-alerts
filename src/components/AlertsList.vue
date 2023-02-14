@@ -1,5 +1,5 @@
 <script setup>
-import { ref, onMounted, onBeforeUnmount, onBeforeMount } from 'vue'
+import { ref, watch, onBeforeUnmount, onBeforeMount, onMounted } from 'vue'
 import IconMenu from './icons/IconMenu.vue'
 import IconClose from './icons/IconClose.vue'
 import { onClickOutside } from '@vueuse/core'
@@ -15,28 +15,6 @@ import sound7 from '@/assets/sound/7.mp3'
 import sound8 from '@/assets/sound/8.mp3'
 import sound9 from '@/assets/sound/9.mp3'
 import sound10 from '@/assets/sound/10.mp3'
-
-// Preload sounds
-const audio1 = new Audio(sound1)
-audio1.load()
-const audio2 = new Audio(sound2)
-audio2.load()
-const audio3 = new Audio(sound3)
-audio3.load()
-const audio4 = new Audio(sound4)
-audio4.load()
-const audio5 = new Audio(sound5)
-audio5.load()
-const audio6 = new Audio(sound6)
-audio6.load()
-const audio7 = new Audio(sound7)
-audio7.load()
-const audio8 = new Audio(sound8)
-audio8.load()
-const audio9 = new Audio(sound9)
-audio9.load()
-const audio10 = new Audio(sound10)
-audio10.load()
 
 const selectedSound = ref('sound2')
 
@@ -100,12 +78,16 @@ let socket = null
 const isRunning = ref(false)
 const buttonText = ref('Start')
 
-const tickers = ['FXSUSDT']
 const alerts = ref([])
 
 const openDom = (symbol, domNumber) => {
   try {
-    sender.send(JSON.stringify({ ticker: symbol, btn: 'dom' + domNumber }))
+    sender.send(
+      JSON.stringify({
+        ticker: symbol.replace('USDT', ''),
+        btn: 'dom' + domNumber,
+      })
+    )
   } catch (error) {
     console.log('Send msg error. Check connection to autoclicker.')
   }
@@ -117,11 +99,27 @@ const selectedDirection = ref('long')
 const logLimit = ref(20)
 const tickersList = ref('BTCUSDT,100\nETHUSDT,100')
 
+// Convert textarea to object
+const tickers = {}
+
+function createTickersObject() {
+  tickersList.value.split('\n').forEach((pair) => {
+    const [key, value] = pair.split(',')
+    tickers[key] = Number(value)
+  })
+}
+
+createTickersObject()
+
+watch(tickersList, () => {
+  createTickersObject()
+})
+
 const createStreams = () => {
   let url = 'wss://fstream.binance.com/stream?streams='
 
-  tickers.forEach((element) => {
-    url += `${element.toLowerCase()}@aggTrade/`
+  Object.keys(tickers).forEach((key) => {
+    url += `${key.toLowerCase()}@aggTrade/`
   })
   socket = new WebSocket(url)
   socket.addEventListener('message', (event) => {
@@ -132,18 +130,44 @@ const createStreams = () => {
     let m = date.getMinutes()
     let s = date.getSeconds()
 
-    const quoteSize = (res.q * res.p).toFixed()
+    const quoteSize = ((res.q * res.p) / 1000).toFixed()
 
-    if (quoteSize >= 100) {
-      playSound()
-      alerts.value.unshift({
-        symbol: res.s,
-        size: quoteSize,
-        time: `${(h = h < 10 ? '0' + h : h)}:${(m =
-          m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
-      })
+    if (selectedDirection.value == 'long') {
+      if (quoteSize >= tickers[res.s] && res.m == false) {
+        playSound()
+        alerts.value.unshift({
+          symbol: res.s,
+          size: quoteSize,
+          direction: 'L',
+          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+        })
+      }
+    } else if (selectedDirection.value == 'short') {
+      if (quoteSize >= tickers[res.s] && res.m == true) {
+        playSound()
+        alerts.value.unshift({
+          symbol: res.s,
+          size: quoteSize,
+          direction: 'S',
+          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+        })
+      }
+    } else {
+      if (quoteSize >= tickers[res.s]) {
+        playSound()
+        alerts.value.unshift({
+          symbol: res.s,
+          size: quoteSize,
+          direction: res.m ? 'S' : 'L',
+          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+        })
+      }
     }
-    if (alerts.value.length > 20) {
+
+    if (alerts.value.length > logLimit.value) {
       alerts.value.pop()
     }
   })
@@ -163,7 +187,6 @@ function onTickersList() {
 
 const startStop = () => {
   if (!isRunning.value) {
-    sender = new WebSocket('ws://localhost:22022')
     createStreams()
     isRunning.value = true
     buttonText.value = 'Stop'
@@ -183,7 +206,7 @@ const switchToDark = () => {
   localStorage.setItem('is-dark', isDark.value.toString())
 }
 
-onMounted(() => {
+onBeforeMount(() => {
   const storedTheme = localStorage.getItem('is-dark')
   if (storedTheme) {
     if (storedTheme === 'true') {
@@ -217,6 +240,18 @@ onBeforeUnmount(() => {
   sender.close()
   socket.close()
 })
+
+onMounted(() => {
+  sender = new WebSocket('ws://localhost:22022')
+})
+
+const copyToClipboard = async (symbol) => {
+  try {
+    await navigator.clipboard.writeText(symbol)
+  } catch (error) {
+    console.error('Error copying text to clipboard', error)
+  }
+}
 </script>
 
 <template>
@@ -242,7 +277,7 @@ onBeforeUnmount(() => {
     <span><button @click="switchToDark">Switch theme</button></span>
     <span>
       Log limit
-      <input type="text" v-model="logLimit" @change="onLogLimitChange" />
+      <input type="text" v-model="logLimit" @input="onLogLimitChange" />
     </span>
     <span>
       <select v-model="selectedDirection" @change="onDirectionSelect">
@@ -266,7 +301,7 @@ onBeforeUnmount(() => {
       </select>
     </span>
     <span>
-      <textarea v-model="tickersList" @change="onTickersList"></textarea>
+      <textarea v-model="tickersList" @input="onTickersList"></textarea>
     </span>
   </div>
 
@@ -277,10 +312,11 @@ onBeforeUnmount(() => {
   <div class="alerts-log">
     <ul>
       <li v-for="alert in alerts" :key="alert">
-        <div class="list-item">
+        <div class="list-item" @click="copyToClipboard(alert.symbol)">
           <div class="readings">
             <span class="name">{{ alert.symbol }}</span>
-            <span class="size">{{ alert.size }}</span>
+            <span class="size">{{ alert.size }}K</span>
+            <span class="direction">{{ alert.direction }}</span>
             <span class="time">{{ alert.time }}</span>
           </div>
           <div class="buttons">
@@ -347,6 +383,7 @@ ul {
   flex-direction: column;
   padding: 8px;
   border-bottom: 1px solid var(--border-color);
+  cursor: pointer;
 
   &:hover {
     background: var(--content-bg-hover);
@@ -372,12 +409,11 @@ ul {
       line-height: 35px;
       // border: 1px solid var(--border-color);
       background: var(--button-bg);
-      cursor: pointer;
       border-radius: 5px;
 
       &:hover {
         background: var(--button-bg-hover);
-        border: 1px solid var(--border-color);
+        // border: 1px solid var(--border-color);
       }
     }
   }
