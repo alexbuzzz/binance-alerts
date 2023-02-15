@@ -1,5 +1,12 @@
 <script setup>
-import { ref, watch, onBeforeUnmount, onBeforeMount, onMounted } from 'vue'
+import {
+  ref,
+  watch,
+  onBeforeUnmount,
+  onBeforeMount,
+  onMounted,
+  reactive,
+} from 'vue'
 import IconMenu from './icons/IconMenu.vue'
 import IconClose from './icons/IconClose.vue'
 import { onClickOutside } from '@vueuse/core'
@@ -74,11 +81,6 @@ let isMobileMenuOpen = ref(false)
 onClickOutside(menu, () => (isMobileMenuOpen.value = false))
 
 let sender = null
-let socket = null
-const isRunning = ref(false)
-const buttonText = ref('Start')
-
-const alerts = ref([])
 
 const openDom = (symbol, domNumber) => {
   try {
@@ -94,9 +96,16 @@ const openDom = (symbol, domNumber) => {
 }
 
 // MAIN ===============================================
+let futSocket = null
+let spotSocket = null
+const isRunning = ref(false)
 const isDark = ref(false)
+const buttonText = ref('Start')
 const selectedDirection = ref('long')
+const selectedMarket = ref('fut')
 const logLimit = ref(20)
+const alerts = ref([])
+const showClickerButtons = ref(false)
 const tickersList = ref('BTCUSDT,100\nETHUSDT,100')
 
 // Convert textarea to object
@@ -116,13 +125,40 @@ watch(tickersList, () => {
 })
 
 const createStreams = () => {
-  let url = 'wss://fstream.binance.com/stream?streams='
+  // FUT stream
+
+  let futUrl = 'wss://fstream.binance.com/stream?streams='
 
   Object.keys(tickers).forEach((key) => {
-    url += `${key.toLowerCase()}@aggTrade/`
+    futUrl += `${key.toLowerCase()}@aggTrade/`
   })
-  socket = new WebSocket(url)
-  socket.addEventListener('message', (event) => {
+  futSocket = new WebSocket(futUrl)
+  futSocket.addEventListener('message', (event) => {
+    if (selectedMarket.value == 'fut' || selectedMarket.value == 'both') {
+      makeAlertsList(event, 'F')
+    }
+  })
+
+  // SPOT stream
+
+  let spotUrl = 'wss://stream.binance.com:9443/stream?streams='
+
+  Object.keys(tickers).forEach((key) => {
+    spotUrl += `${key.toLowerCase()}@aggTrade/`
+  })
+  spotUrl = spotUrl.slice(0, -1)
+  spotSocket = new WebSocket(spotUrl)
+  spotSocket.addEventListener('message', (event) => {
+    if (selectedMarket.value == 'spot' || selectedMarket.value == 'both') {
+      makeAlertsList(event, '')
+    }
+  })
+
+  function makeAlertsList(event, market) {
+    if (event.data === 'ping') {
+      console.log('spot pong')
+      connection.send('pong')
+    }
     const res = JSON.parse(event.data).data
 
     const date = new Date(res.T)
@@ -139,6 +175,7 @@ const createStreams = () => {
           symbol: res.s,
           size: quoteSize,
           direction: 'L',
+          market: market,
           time: `${(h = h < 10 ? '0' + h : h)}:${(m =
             m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
         })
@@ -150,6 +187,7 @@ const createStreams = () => {
           symbol: res.s,
           size: quoteSize,
           direction: 'S',
+          market: market,
           time: `${(h = h < 10 ? '0' + h : h)}:${(m =
             m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
         })
@@ -161,6 +199,7 @@ const createStreams = () => {
           symbol: res.s,
           size: quoteSize,
           direction: res.m ? 'S' : 'L',
+          market: market,
           time: `${(h = h < 10 ? '0' + h : h)}:${(m =
             m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
         })
@@ -170,7 +209,7 @@ const createStreams = () => {
     if (alerts.value.length > logLimit.value) {
       alerts.value.pop()
     }
-  })
+  }
 }
 
 function onLogLimitChange() {
@@ -179,6 +218,10 @@ function onLogLimitChange() {
 
 function onDirectionSelect() {
   localStorage.setItem('selectedDirection', selectedDirection.value)
+}
+
+function onMarketSelect() {
+  localStorage.setItem('selectedMarket', selectedMarket.value)
 }
 
 function onTickersList() {
@@ -191,7 +234,8 @@ const startStop = () => {
     isRunning.value = true
     buttonText.value = 'Stop'
   } else {
-    socket.close()
+    futSocket.close()
+    spotSocket.close()
     isRunning.value = false
     buttonText.value = 'Start'
   }
@@ -206,12 +250,23 @@ const switchToDark = () => {
   localStorage.setItem('is-dark', isDark.value.toString())
 }
 
+const showButtons = () => {
+  localStorage.setItem('showClickerButtons', showClickerButtons.value)
+}
+
 onBeforeMount(() => {
   const storedTheme = localStorage.getItem('is-dark')
   if (storedTheme) {
     if (storedTheme === 'true') {
       document.documentElement.setAttribute('data-theme', 'dark')
       isDark.value = true
+    }
+  }
+
+  const storedCheckbox = localStorage.getItem('showClickerButtons')
+  if (storedCheckbox) {
+    if (storedCheckbox === 'true') {
+      showClickerButtons.value = storedCheckbox
     }
   }
 
@@ -223,6 +278,11 @@ onBeforeMount(() => {
   const storedDirection = localStorage.getItem('selectedDirection')
   if (storedDirection) {
     selectedDirection.value = storedDirection
+  }
+
+  const storedMarket = localStorage.getItem('selectedMarket')
+  if (storedMarket) {
+    selectedMarket.value = storedMarket
   }
 
   const storedLogLimit = localStorage.getItem('logLimit')
@@ -238,7 +298,8 @@ onBeforeMount(() => {
 
 onBeforeUnmount(() => {
   sender.close()
-  socket.close()
+  futSocket.close()
+  spotSocket.close()
 })
 
 onMounted(() => {
@@ -276,6 +337,14 @@ const copyToClipboard = async (symbol) => {
   <div class="mobile-menu" :class="{ 'is-open': isMobileMenuOpen }" ref="menu">
     <span><button @click="switchToDark">Switch theme</button></span>
     <span>
+      Show buttons
+      <input
+        type="checkbox"
+        v-model="showClickerButtons"
+        @change="showButtons"
+      />
+    </span>
+    <span>
       Log limit
       <input type="text" v-model="logLimit" @input="onLogLimitChange" />
     </span>
@@ -284,6 +353,13 @@ const copyToClipboard = async (symbol) => {
         <option value="long">Long</option>
         <option value="short">Short</option>
         <option value="any">Any</option>
+      </select>
+    </span>
+    <span>
+      <select v-model="selectedMarket" @change="onMarketSelect">
+        <option value="fut">FUT</option>
+        <option value="spot">SPOT</option>
+        <option value="both">BOTH</option>
       </select>
     </span>
     <span>
@@ -314,12 +390,20 @@ const copyToClipboard = async (symbol) => {
       <li v-for="alert in alerts" :key="alert">
         <div class="list-item" @click="copyToClipboard(alert.symbol)">
           <div class="readings">
-            <span class="name">{{ alert.symbol }}</span>
+            <span class="name">{{ alert.symbol }} {{ alert.market }}</span>
             <span class="size">{{ alert.size }}K</span>
-            <span class="direction">{{ alert.direction }}</span>
+            <span
+              class="direction"
+              v-if="alert.direction === 'L'"
+              style="color: green"
+              >{{ alert.direction }}</span
+            >
+            <span class="direction" v-else style="color: red">{{
+              alert.direction
+            }}</span>
             <span class="time">{{ alert.time }}</span>
           </div>
-          <div class="buttons">
+          <div class="buttons" v-if="showClickerButtons">
             <div class="dom-btn" @click="openDom(alert.symbol, 1)">1</div>
             <div class="dom-btn" @click="openDom(alert.symbol, 2)">2</div>
             <div class="dom-btn" @click="openDom(alert.symbol, 3)">3</div>
@@ -363,6 +447,11 @@ select {
   }
 }
 
+input[type='checkbox'] {
+  transform: scale(1.4);
+  vertical-align: middle;
+}
+
 ul {
   list-style-type: none;
   margin: 0;
@@ -393,7 +482,7 @@ ul {
     display: flex;
     justify-content: space-between;
     padding: 8px 0;
-    // margin-bottom: 8px;
+    gap: 8px;
   }
 
   .buttons {
@@ -407,13 +496,25 @@ ul {
       text-align: center;
       vertical-align: middle;
       line-height: 35px;
-      // border: 1px solid var(--border-color);
       background: var(--button-bg);
       border-radius: 5px;
 
       &:hover {
         background: var(--button-bg-hover);
-        // border: 1px solid var(--border-color);
+      }
+    }
+
+    .copy-btn {
+      width: 100%;
+      height: 35px;
+      text-align: center;
+      vertical-align: middle;
+      line-height: 35px;
+      background: var(--button-bg);
+      border-radius: 5px;
+
+      &:hover {
+        background: var(--button-bg-hover);
       }
     }
   }
