@@ -118,20 +118,18 @@ function createTickersObject() {
   })
 }
 
-createTickersObject()
-
 watch(tickersList, () => {
   createTickersObject()
 })
 
 const createStreams = () => {
   // FUT stream
-
   let futUrl = 'wss://fstream.binance.com/stream?streams='
 
   Object.keys(tickers).forEach((key) => {
     futUrl += `${key.toLowerCase()}@aggTrade/`
   })
+
   futSocket = new WebSocket(futUrl)
   futSocket.addEventListener('message', (event) => {
     if (selectedMarket.value == 'fut' || selectedMarket.value == 'both') {
@@ -140,13 +138,13 @@ const createStreams = () => {
   })
 
   // SPOT stream
-
   let spotUrl = 'wss://stream.binance.com:9443/stream?streams='
 
   Object.keys(tickers).forEach((key) => {
     spotUrl += `${key.toLowerCase()}@aggTrade/`
   })
   spotUrl = spotUrl.slice(0, -1)
+
   spotSocket = new WebSocket(spotUrl)
   spotSocket.addEventListener('message', (event) => {
     if (selectedMarket.value == 'spot' || selectedMarket.value == 'both') {
@@ -155,10 +153,19 @@ const createStreams = () => {
   })
 
   function makeAlertsList(event, market) {
-    if (event.data === 'ping') {
-      console.log('spot pong')
+    if (event.data == 'ping') {
+      console.log('pong')
       connection.send('pong')
     }
+    if (event == 'ping') {
+      console.log('pong 2')
+      connection.send('pong')
+    }
+    if (event.data.data == 'ping') {
+      console.log('pong 3')
+      connection.send('pong')
+    }
+
     const res = JSON.parse(event.data).data
 
     const date = new Date(res.T)
