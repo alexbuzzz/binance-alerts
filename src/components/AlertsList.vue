@@ -101,8 +101,8 @@ let spotSocket = null
 const isRunning = ref(false)
 const isDark = ref(false)
 const buttonText = ref('Start')
-const selectedDirection = ref('long')
-const selectedMarket = ref('fut')
+const selectedDirection = ref('any')
+const selectedMarket = ref('both')
 const logLimit = ref(20)
 const alerts = ref([])
 const showClickerButtons = ref(false)
@@ -306,12 +306,13 @@ onMounted(() => {
   sender = new WebSocket('ws://localhost:22022')
 })
 
-const copyToClipboard = async (symbol) => {
-  try {
-    await navigator.clipboard.writeText(symbol)
-  } catch (error) {
-    console.error('Error copying text to clipboard', error)
-  }
+const copyToClipboard = (symbol) => {
+  const dummy = document.createElement('textarea')
+  document.body.appendChild(dummy)
+  dummy.value = symbol
+  dummy.select()
+  document.execCommand('copy')
+  document.body.removeChild(dummy)
 }
 </script>
 
