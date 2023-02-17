@@ -98,12 +98,15 @@ const openDom = (symbol, domNumber) => {
 // MAIN ===============================================
 let futSocket = null
 let spotSocket = null
+let futInterval = null
+let spotInterval = null
 const isRunning = ref(false)
 const isDark = ref(false)
 const buttonText = ref('Start')
 const selectedDirection = ref('any')
 const selectedMarket = ref('both')
 const logLimit = ref(20)
+const aggTime = ref(1000)
 const alerts = ref([])
 const showClickerButtons = ref(false)
 const tickersList = ref('BTCUSDT,100\nETHUSDT,100')
@@ -123,6 +126,9 @@ watch(tickersList, () => {
 })
 
 const createStreams = () => {
+  let tempFutData = {}
+  let tempSpotData = {}
+
   // FUT stream
   let futUrl = 'wss://fstream.binance.com/stream?streams='
 
@@ -133,9 +139,119 @@ const createStreams = () => {
   futSocket = new WebSocket(futUrl)
   futSocket.addEventListener('message', (event) => {
     if (selectedMarket.value == 'fut' || selectedMarket.value == 'both') {
-      makeAlertsList(event, 'F')
+      // *
+      const res = JSON.parse(event.data).data
+      const symbol = res.s
+      const price = res.p
+      const size = res.q
+      let quoteSize = Math.round((size * price) / 1000)
+
+      // Format long/short
+      if (res.m === true) {
+        quoteSize = quoteSize * -1
+      }
+
+      // Fill up an object
+      if (tempFutData[symbol]) {
+        tempFutData[symbol].push({ size: quoteSize, price: price })
+      } else {
+        tempFutData[symbol] = [{ size: quoteSize, price: price }]
+      }
     }
   })
+
+  // *
+  if (selectedMarket.value == 'fut' || selectedMarket.value == 'both') {
+    futInterval = setInterval(() => {
+      const directions = {}
+
+      // Define directions
+      Object.keys(tempFutData).forEach((key) => {
+        if (
+          tempFutData[key][0].price <=
+          tempFutData[key][tempFutData[key].length - 1].price
+        ) {
+          directions[key] = 'long'
+        } else {
+          directions[key] = 'short'
+        }
+      })
+
+      // Take and summ trades with specific direction
+      Object.keys(tempFutData).forEach((key) => {
+        if (
+          directions[key] == 'long' &&
+          (selectedDirection.value == 'long' ||
+            selectedDirection.value == 'any')
+        ) {
+          const sum = tempFutData[key].reduce((acc, val) => {
+            if (val.size > 0) {
+              return acc + val.size
+            } else {
+              return acc
+            }
+          }, 0)
+
+          if (sum >= tickers[key]) {
+            const date = new Date()
+            let h = date.getHours()
+            let m = date.getMinutes()
+            let s = date.getSeconds()
+
+            playSound()
+
+            alerts.value.unshift({
+              symbol: key,
+              size: sum,
+              direction: 'L',
+              market: 'F',
+              time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+                m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+            })
+          }
+        }
+
+        if (
+          directions[key] == 'short' &&
+          (selectedDirection.value == 'short' ||
+            selectedDirection.value == 'any')
+        ) {
+          const sum = Math.abs(
+            tempFutData[key].reduce((acc, val) => {
+              if (val.size <= 0) {
+                return acc - val.size
+              } else {
+                return acc
+              }
+            }, 0)
+          )
+          if (sum >= tickers[key]) {
+            const date = new Date()
+            let h = date.getHours()
+            let m = date.getMinutes()
+            let s = date.getSeconds()
+
+            playSound()
+
+            alerts.value.unshift({
+              symbol: key,
+              size: sum,
+              direction: 'S',
+              market: 'F',
+              time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+                m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+            })
+
+            if (alerts.value.length > logLimit.value) {
+              alerts.value = alerts.value.slice(0, logLimit.value)
+            }
+          }
+        }
+      })
+
+      tempFutData = {}
+    }, aggTime.value)
+  }
 
   // SPOT stream
   let spotUrl = 'wss://stream.binance.com:9443/stream?streams='
@@ -148,79 +264,127 @@ const createStreams = () => {
   spotSocket = new WebSocket(spotUrl)
   spotSocket.addEventListener('message', (event) => {
     if (selectedMarket.value == 'spot' || selectedMarket.value == 'both') {
-      makeAlertsList(event, '')
+      // *
+      const res = JSON.parse(event.data).data
+      const symbol = res.s
+      const price = res.p
+      const size = res.q
+      let quoteSize = Math.round((size * price) / 1000)
+
+      // Format long/short
+      if (res.m === true) {
+        quoteSize = quoteSize * -1
+      }
+
+      // Fill up an object
+      if (tempSpotData[symbol]) {
+        tempSpotData[symbol].push({ size: quoteSize, price: price })
+      } else {
+        tempSpotData[symbol] = [{ size: quoteSize, price: price }]
+      }
     }
   })
 
-  function makeAlertsList(event, market) {
-    if (event.data == 'ping') {
-      console.log('pong')
-      connection.send('pong')
-    }
-    if (event == 'ping') {
-      console.log('pong 2')
-      connection.send('pong')
-    }
-    if (event.data.data == 'ping') {
-      console.log('pong 3')
-      connection.send('pong')
-    }
+  // *
+  if (selectedMarket.value == 'spot' || selectedMarket.value == 'both') {
+    spotInterval = setInterval(() => {
+      const directions = {}
 
-    const res = JSON.parse(event.data).data
+      // Define directions
+      Object.keys(tempSpotData).forEach((key) => {
+        if (
+          tempSpotData[key][0].price <=
+          tempSpotData[key][tempSpotData[key].length - 1].price
+        ) {
+          directions[key] = 'long'
+        } else {
+          directions[key] = 'short'
+        }
+      })
 
-    const date = new Date(res.T)
-    let h = date.getHours()
-    let m = date.getMinutes()
-    let s = date.getSeconds()
+      // Take and summ trades with specific direction
+      Object.keys(tempSpotData).forEach((key) => {
+        if (
+          directions[key] == 'long' &&
+          (selectedDirection.value == 'long' ||
+            selectedDirection.value == 'any')
+        ) {
+          const sum = tempSpotData[key].reduce((acc, val) => {
+            if (val.size > 0) {
+              return acc + val.size
+            } else {
+              return acc
+            }
+          }, 0)
 
-    const quoteSize = ((res.q * res.p) / 1000).toFixed()
+          if (sum >= tickers[key]) {
+            const date = new Date()
+            let h = date.getHours()
+            let m = date.getMinutes()
+            let s = date.getSeconds()
 
-    if (selectedDirection.value == 'long') {
-      if (quoteSize >= tickers[res.s] && res.m == false) {
-        playSound()
-        alerts.value.unshift({
-          symbol: res.s,
-          size: quoteSize,
-          direction: 'L',
-          market: market,
-          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
-            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
-        })
-      }
-    } else if (selectedDirection.value == 'short') {
-      if (quoteSize >= tickers[res.s] && res.m == true) {
-        playSound()
-        alerts.value.unshift({
-          symbol: res.s,
-          size: quoteSize,
-          direction: 'S',
-          market: market,
-          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
-            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
-        })
-      }
-    } else {
-      if (quoteSize >= tickers[res.s]) {
-        playSound()
-        alerts.value.unshift({
-          symbol: res.s,
-          size: quoteSize,
-          direction: res.m ? 'S' : 'L',
-          market: market,
-          time: `${(h = h < 10 ? '0' + h : h)}:${(m =
-            m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
-        })
-      }
-    }
+            playSound()
 
-    if (alerts.value.length > logLimit.value) {
-      alerts.value.pop()
-    }
+            alerts.value.unshift({
+              symbol: key,
+              size: sum,
+              direction: 'L',
+              market: '',
+              time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+                m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+            })
+          }
+        }
+
+        if (
+          directions[key] == 'short' &&
+          (selectedDirection.value == 'short' ||
+            selectedDirection.value == 'any')
+        ) {
+          const sum = Math.abs(
+            tempSpotData[key].reduce((acc, val) => {
+              if (val.size <= 0) {
+                return acc - val.size
+              } else {
+                return acc
+              }
+            }, 0)
+          )
+          if (sum >= tickers[key]) {
+            const date = new Date()
+            let h = date.getHours()
+            let m = date.getMinutes()
+            let s = date.getSeconds()
+
+            playSound()
+
+            alerts.value.unshift({
+              symbol: key,
+              size: sum,
+              direction: 'S',
+              market: '',
+              time: `${(h = h < 10 ? '0' + h : h)}:${(m =
+                m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
+            })
+
+            if (alerts.value.length > logLimit.value) {
+              alerts.value = alerts.value.slice(0, logLimit.value)
+            }
+          }
+        }
+      })
+
+      tempSpotData = {}
+    }, aggTime.value)
   }
 }
 
 function onLogLimitChange() {
   localStorage.setItem('logLimit', logLimit.value)
+}
+
+function onAggTimeChange() {
+  localStorage.setItem('aggTime', aggTime.value)
 }
 
 function onDirectionSelect() {
@@ -243,6 +407,8 @@ const startStop = () => {
   } else {
     futSocket.close()
     spotSocket.close()
+    clearInterval(futInterval)
+    clearInterval(spotInterval)
     isRunning.value = false
     buttonText.value = 'Start'
   }
@@ -297,6 +463,11 @@ onBeforeMount(() => {
     logLimit.value = storedLogLimit
   }
 
+  const storedAggTime = localStorage.getItem('aggTime')
+  if (storedAggTime) {
+    aggTime.value = storedAggTime
+  }
+
   const storedTickersList = localStorage.getItem('tickersList')
   if (storedTickersList) {
     tickersList.value = storedTickersList
@@ -306,6 +477,8 @@ onBeforeMount(() => {
 onBeforeUnmount(() => {
   sender.close()
   futSocket.close()
+  clearInterval(futInterval)
+  clearInterval(spotInterval)
   spotSocket.close()
 })
 
@@ -355,6 +528,10 @@ const copyToClipboard = (symbol) => {
     <span>
       Log limit
       <input type="text" v-model="logLimit" @input="onLogLimitChange" />
+    </span>
+    <span>
+      Agg time
+      <input type="text" v-model="aggTime" @input="onAggTimeChange" />
     </span>
     <span>
       <select v-model="selectedDirection" @change="onDirectionSelect">
