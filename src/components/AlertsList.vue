@@ -256,8 +256,11 @@ const createStreams = () => {
   // SPOT stream
   let spotUrl = 'wss://stream.binance.com:9443/stream?streams='
 
-  Object.keys(tickers.replace('1000', '').replace('2', '')).forEach((key) => {
-    spotUrl += `${key.toLowerCase()}@aggTrade/`
+  Object.keys(tickers).forEach((key) => {
+    spotUrl += `${key
+      .replace('1000', '')
+      .replace('2', '')
+      .toLowerCase()}@aggTrade/`
   })
   spotUrl = spotUrl.slice(0, -1)
 
