@@ -7,78 +7,10 @@ import {
   onMounted,
   reactive,
 } from 'vue'
-import IconMenu from './icons/IconMenu.vue'
-import IconClose from './icons/IconClose.vue'
-import { onClickOutside } from '@vueuse/core'
 
 // SOUNDS ===============================================
-import sound1 from '@/assets/sound/1.mp3'
-import sound2 from '@/assets/sound/2.mp3'
-import sound3 from '@/assets/sound/3.mp3'
-import sound4 from '@/assets/sound/4.mp3'
-import sound5 from '@/assets/sound/5.mp3'
-import sound6 from '@/assets/sound/6.mp3'
-import sound7 from '@/assets/sound/7.mp3'
-import sound8 from '@/assets/sound/8.mp3'
-import sound9 from '@/assets/sound/9.mp3'
-import sound10 from '@/assets/sound/10.mp3'
 
-const selectedSound = ref('sound2')
-
-function playSound() {
-  let soundFile
-
-  switch (selectedSound.value) {
-    case 'sound1':
-      soundFile = sound1
-      break
-    case 'sound2':
-      soundFile = sound2
-      break
-    case 'sound3':
-      soundFile = sound3
-      break
-    case 'sound4':
-      soundFile = sound4
-      break
-    case 'sound5':
-      soundFile = sound5
-      break
-    case 'sound6':
-      soundFile = sound6
-      break
-    case 'sound7':
-      soundFile = sound7
-      break
-    case 'sound8':
-      soundFile = sound8
-      break
-    case 'sound9':
-      soundFile = sound9
-      break
-    case 'sound10':
-      soundFile = sound10
-      break
-    default:
-      console.error('Invalid sound selection:', selectedSound.value)
-      return
-  }
-
-  const audio = new Audio(soundFile)
-  audio.play()
-}
-
-function onSoundSelect() {
-  playSound()
-  localStorage.setItem('selectedSound', selectedSound.value)
-}
-
-// MENU ===============================================
-const menu = ref(null)
-
-let isMobileMenuOpen = ref(false)
-
-onClickOutside(menu, () => (isMobileMenuOpen.value = false))
+// MAIN ===============================================
 
 let sender = null
 
@@ -94,36 +26,6 @@ const openDom = (symbol, domNumber) => {
     console.log('Send msg error. Check connection to autoclicker.')
   }
 }
-
-// MAIN ===============================================
-let futSocket = null
-let spotSocket = null
-let futInterval = null
-let spotInterval = null
-const isRunning = ref(false)
-const isDark = ref(false)
-const buttonText = ref('Start')
-const selectedDirection = ref('any')
-const selectedMarket = ref('both')
-const logLimit = ref(20)
-const aggTime = ref(1000)
-const alerts = ref([])
-const showClickerButtons = ref(false)
-const tickersList = ref('BTCUSDT,100\nETHUSDT,100')
-
-// Convert textarea to object
-const tickers = {}
-
-function createTickersObject() {
-  tickersList.value.split('\n').forEach((pair) => {
-    const [key, value] = pair.split(',')
-    tickers[key] = Number(value)
-  })
-}
-
-watch(tickersList, () => {
-  createTickersObject()
-})
 
 const createStreams = () => {
   let tempFutData = {}
@@ -382,101 +284,6 @@ const createStreams = () => {
   }
 }
 
-function onLogLimitChange() {
-  localStorage.setItem('logLimit', logLimit.value)
-}
-
-function onAggTimeChange() {
-  localStorage.setItem('aggTime', aggTime.value)
-}
-
-function onDirectionSelect() {
-  localStorage.setItem('selectedDirection', selectedDirection.value)
-}
-
-function onMarketSelect() {
-  localStorage.setItem('selectedMarket', selectedMarket.value)
-}
-
-function onTickersList() {
-  localStorage.setItem('tickersList', tickersList.value)
-}
-
-const startStop = () => {
-  if (!isRunning.value) {
-    createStreams()
-    isRunning.value = true
-    buttonText.value = 'Stop'
-  } else {
-    futSocket.close()
-    spotSocket.close()
-    clearInterval(futInterval)
-    clearInterval(spotInterval)
-    isRunning.value = false
-    buttonText.value = 'Start'
-  }
-}
-
-const switchToDark = () => {
-  isDark.value
-    ? document.documentElement.setAttribute('data-theme', 'light')
-    : document.documentElement.setAttribute('data-theme', 'dark')
-
-  isDark.value = !isDark.value
-  localStorage.setItem('is-dark', isDark.value.toString())
-}
-
-const showButtons = () => {
-  localStorage.setItem('showClickerButtons', showClickerButtons.value)
-}
-
-onBeforeMount(() => {
-  const storedTheme = localStorage.getItem('is-dark')
-  if (storedTheme) {
-    if (storedTheme === 'true') {
-      document.documentElement.setAttribute('data-theme', 'dark')
-      isDark.value = true
-    }
-  }
-
-  const storedCheckbox = localStorage.getItem('showClickerButtons')
-  if (storedCheckbox) {
-    if (storedCheckbox === 'true') {
-      showClickerButtons.value = storedCheckbox
-    }
-  }
-
-  const storedSound = localStorage.getItem('selectedSound')
-  if (storedSound) {
-    selectedSound.value = storedSound
-  }
-
-  const storedDirection = localStorage.getItem('selectedDirection')
-  if (storedDirection) {
-    selectedDirection.value = storedDirection
-  }
-
-  const storedMarket = localStorage.getItem('selectedMarket')
-  if (storedMarket) {
-    selectedMarket.value = storedMarket
-  }
-
-  const storedLogLimit = localStorage.getItem('logLimit')
-  if (storedLogLimit) {
-    logLimit.value = storedLogLimit
-  }
-
-  const storedAggTime = localStorage.getItem('aggTime')
-  if (storedAggTime) {
-    aggTime.value = storedAggTime
-  }
-
-  const storedTickersList = localStorage.getItem('tickersList')
-  if (storedTickersList) {
-    tickersList.value = storedTickersList
-  }
-})
-
 onBeforeUnmount(() => {
   sender.close()
   futSocket.close()
@@ -488,91 +295,9 @@ onBeforeUnmount(() => {
 onMounted(() => {
   sender = new WebSocket('ws://localhost:22022')
 })
-
-const copyToClipboard = (symbol) => {
-  const dummy = document.createElement('textarea')
-  document.body.appendChild(dummy)
-  dummy.value = symbol
-  dummy.select()
-  document.execCommand('copy')
-  document.body.removeChild(dummy)
-}
 </script>
 
 <template>
-  <!-- Show menu button -->
-  <button
-    v-if="!isMobileMenuOpen"
-    @click="isMobileMenuOpen = true"
-    class="menu-btn"
-  >
-    <IconMenu />
-  </button>
-  <!-- Hide menu button -->
-  <button
-    v-if="isMobileMenuOpen"
-    @click="isMobileMenuOpen = false"
-    class="menu-btn"
-  >
-    <IconClose />
-  </button>
-  <!-- Mobile menu -->
-  <div class="menu-bg" :class="{ 'show-bg': isMobileMenuOpen }"></div>
-  <div class="mobile-menu" :class="{ 'is-open': isMobileMenuOpen }" ref="menu">
-    <span><button @click="switchToDark">Switch theme</button></span>
-    <span>
-      Show buttons
-      <input
-        type="checkbox"
-        v-model="showClickerButtons"
-        @change="showButtons"
-      />
-    </span>
-    <span>
-      Log limit
-      <input type="text" v-model="logLimit" @input="onLogLimitChange" />
-    </span>
-    <span>
-      Agg time
-      <input type="text" v-model="aggTime" @input="onAggTimeChange" />
-    </span>
-    <span>
-      <select v-model="selectedDirection" @change="onDirectionSelect">
-        <option value="long">Long</option>
-        <option value="short">Short</option>
-        <option value="any">Any</option>
-      </select>
-    </span>
-    <span>
-      <select v-model="selectedMarket" @change="onMarketSelect">
-        <option value="fut">FUT</option>
-        <option value="spot">SPOT</option>
-        <option value="both">BOTH</option>
-      </select>
-    </span>
-    <span>
-      <select v-model="selectedSound" @change="onSoundSelect">
-        <option value="sound1">Sound 1</option>
-        <option value="sound2">Sound 2</option>
-        <option value="sound3">Sound 3</option>
-        <option value="sound4">Sound 4</option>
-        <option value="sound5">Sound 5</option>
-        <option value="sound6">Sound 6</option>
-        <option value="sound7">Sound 7</option>
-        <option value="sound8">Sound 8</option>
-        <option value="sound9">Sound 9</option>
-        <option value="sound10">Sound 10</option>
-      </select>
-    </span>
-    <span>
-      <textarea v-model="tickersList" @input="onTickersList"></textarea>
-    </span>
-  </div>
-
-  <div class="header">
-    <button @click="startStop">{{ buttonText }}</button>
-  </div>
-
   <div class="alerts-log">
     <ul>
       <li v-for="alert in alerts" :key="alert">
@@ -615,23 +340,6 @@ button {
 
   &:hover {
     background: var(--button-bg-hover);
-  }
-}
-
-select {
-  margin: 5px 0 0 5px;
-  z-index: 10;
-  color: var(--text-color);
-  background: transparent;
-  border: none;
-  outline: none;
-
-  option {
-    color: var(--select-options-text-color);
-
-    &:hover {
-      background: var(--content-bg);
-    }
   }
 }
 
@@ -706,98 +414,5 @@ ul {
       }
     }
   }
-}
-
-.menu-btn {
-  color: var(--text-color);
-  position: absolute;
-  right: 0;
-  border: none;
-  background: none;
-  z-index: 40;
-  cursor: pointer;
-  padding-top: 3px;
-}
-
-.menu-bg {
-  position: fixed;
-  top: 0;
-  left: 0;
-  opacity: 0;
-  transition: 0.25s;
-  width: 100vw;
-  height: 100vh;
-  z-index: 0;
-  background-color: var(--color-popup-overlay);
-  display: flex;
-  justify-content: center;
-}
-.mobile-menu {
-  position: fixed;
-  top: 0;
-  right: 0;
-  width: 200px;
-  height: 100%;
-  z-index: 30;
-  background-color: var(--body-bg);
-  padding-top: 3rem;
-  opacity: 0;
-  transform: translateX(100%);
-  transition: 0.25s;
-
-  span {
-    display: block;
-    padding: 0.5rem;
-    color: var(--text-color);
-    text-decoration: none;
-    text-align: center;
-    transition: 0.25s;
-    cursor: pointer;
-
-    &:hover {
-      background-color: var(--button-bg-hover);
-      transition: 0.25s;
-    }
-
-    input {
-      width: 40px;
-      text-align: center;
-      background: var(--body-bg);
-      outline: none;
-      color: var(--text-color);
-      border-top-style: hidden;
-      border-right-style: hidden;
-      border-left-style: hidden;
-      border-bottom-style: hidden;
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      margin-left: 8px;
-      padding: 4px;
-    }
-
-    textarea {
-      width: 160px;
-      height: 250px;
-      background: var(--body-bg);
-      outline: none;
-      color: var(--text-color);
-      border: 1px solid var(--border-color);
-      border-radius: 4px;
-      box-sizing: border-box;
-      padding: 8px;
-      text-align: center;
-    }
-  }
-}
-
-.is-open {
-  opacity: 1;
-  transform: translateY(0);
-}
-
-.show-bg {
-  transition: 0.25s;
-  opacity: 1;
-  z-index: 25;
 }
 </style>

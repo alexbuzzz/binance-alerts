@@ -19,6 +19,9 @@
   --color-error: #f37676;
   --color-popup-overlay: rgba(0, 0, 0, 0.5);
   --select-options-text-color: #333;
+  --divider-color: #989898;
+  --menu-background: #ffffff;
+  --menu-background-hover: #f4f4f4;
 }
 
 [data-theme='dark'] {
@@ -42,6 +45,9 @@
   --color-error: #f37676;
   --color-popup-overlay: rgba(0, 0, 0, 0.5);
   --select-options-text-color: #333;
+  --divider-color: #6c6c6c;
+  --menu-background: #2a2a2a;
+  --menu-background-hover: #343434;
 }
 
 *,

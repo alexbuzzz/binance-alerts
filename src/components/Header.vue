@@ -1,26 +1,40 @@
 <script setup>
-import { RouterLink } from 'vue-router'
+import { ref, onBeforeUnmount } from 'vue'
+import streams from '@/tape-alerts'
+
+const isRunning = ref(false)
+const buttonText = ref('Start')
+
+const startStop = () => {
+  if (!isRunning.value) {
+    streams.startFut()
+    streams.startSpot()
+    isRunning.value = true
+    buttonText.value = 'Stop'
+  } else {
+    streams.stoptFut()
+    streams.stoptSpot()
+    isRunning.value = false
+    buttonText.value = 'Start'
+  }
+}
+
+onBeforeUnmount(() => {
+  streams.stoptFut()
+  streams.stoptSpot()
+})
 </script>
 
 <template>
   <div class="header">
-    <nav>
-      <RouterLink to="/">Alerts</RouterLink>
-      <RouterLink to="/settings">Settings</RouterLink>
-    </nav>
+    <button @click="startStop">{{ buttonText }}</button>
   </div>
 </template>
 
 <style lang="scss" scoped>
 .header {
-  height: 40px;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-
-  nav {
-    display: flex;
-    gap: 8px;
+  button {
+    padding: 8px 16px;
   }
 }
 </style>
