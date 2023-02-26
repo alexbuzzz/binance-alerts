@@ -1,7 +1,17 @@
 <script setup>
 import store from '@/store'
 import { computed } from 'vue'
+import streams from '@/tape-alerts'
 const alerts = store.state.commonLogAlerts
+
+const copyToClipboard = (symbol) => {
+  const dummy = document.createElement('textarea')
+  document.body.appendChild(dummy)
+  dummy.value = symbol
+  dummy.select()
+  document.execCommand('copy')
+  document.body.removeChild(dummy)
+}
 </script>
 <template>
   <div class="log-wrapper">
@@ -23,10 +33,18 @@ const alerts = store.state.commonLogAlerts
             <span class="time">{{ alert.time }}</span>
           </div>
           <div class="buttons" v-if="store.state.showClickerButtons">
-            <div class="dom-btn" @click="openDom(alert.symbol, 1)">1</div>
-            <div class="dom-btn" @click="openDom(alert.symbol, 2)">2</div>
-            <div class="dom-btn" @click="openDom(alert.symbol, 3)">3</div>
-            <div class="dom-btn" @click="openDom(alert.symbol, 4)">4</div>
+            <div class="dom-btn" @click="streams.openDom(alert.symbol, 1)">
+              1
+            </div>
+            <div class="dom-btn" @click="streams.openDom(alert.symbol, 2)">
+              2
+            </div>
+            <div class="dom-btn" @click="streams.openDom(alert.symbol, 3)">
+              3
+            </div>
+            <div class="dom-btn" @click="streams.openDom(alert.symbol, 4)">
+              4
+            </div>
           </div>
         </div>
       </li>

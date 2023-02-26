@@ -13,6 +13,15 @@ const store = createStore({
       selectedSound: 'sound2',
       tickersList: 'BTCUSDT,100\nETHUSDT,100',
       commonLogAlerts: [],
+      commonAccAlerts: [
+        {
+          symbol: 'ADAUSDT',
+          time: '00000000',
+          market: 'F',
+          direction: 'L',
+          count: 2,
+        },
+      ],
     }
   },
   mutations: {
@@ -30,15 +39,6 @@ const store = createStore({
 
     playSound(state) {
       play(state.selectedSound)
-    },
-
-    copyToClipboard(symbol) {
-      const dummy = document.createElement('textarea')
-      document.body.appendChild(dummy)
-      dummy.value = symbol
-      dummy.select()
-      document.execCommand('copy')
-      document.body.removeChild(dummy)
     },
   },
 })
