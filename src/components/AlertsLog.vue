@@ -23,10 +23,10 @@ const copyToClipboard = (symbol) => {
             <span
               class="size"
               v-if="alert.direction === 'L'"
-              style="color: green"
+              style="color: #459a45"
               >{{ alert.size }}K</span
             >
-            <span class="size" v-else style="color: red">
+            <span class="size" v-else style="color: #ff5454">
               {{ alert.size }}K</span
             >
 

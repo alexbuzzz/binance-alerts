@@ -22,10 +22,10 @@ const copyToClipboard = (symbol) => {
             <span
               class="count"
               v-if="alert.direction === 'L'"
-              style="background: green"
+              style="background: #459a45"
               >{{ alert.count }}</span
             >
-            <span class="count" v-else style="background: red">
+            <span class="count" v-else style="background: #ff5454">
               {{ alert.count }}</span
             >
             <span class="name">{{ alert.symbol }} {{ alert.market }}</span>

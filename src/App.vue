@@ -4,10 +4,20 @@ import AlertsAccumulator from './components/AlertsAccumulator.vue'
 import Header from './components/Header.vue'
 import Menu from './components/Menu.vue'
 import store from './store'
-import { onMounted, onBeforeUnmount } from 'vue'
+import { onMounted, onBeforeUnmount, ref } from 'vue'
 import streams from '@/tape-alerts'
 
+const loggedIn = ref(false)
+const password = ref('')
+const storedPassword = '2064'
+
+const checkPassword = () => {
+  if (password.value === storedPassword) {
+    loggedIn.value = true
+  }
+}
 onMounted(() => {
+  checkPassword()
   // Get all saved data fron locastorage
   store.commit('initialiseStore')
 
@@ -58,8 +68,16 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <Header />
-  <Menu />
+  <div class="password-overlay" v-if="!loggedIn">
+    <input
+      type="password"
+      placeholder="PASSWORD"
+      v-model="password"
+      @input="checkPassword"
+    />
+  </div>
+  <Header v-if="loggedIn" />
+  <Menu v-if="loggedIn" />
 
   <div class="container">
     <div id="log">
@@ -73,6 +91,34 @@ onBeforeUnmount(() => {
 </template>
 
 <style lang="scss" scoped>
+.password-overlay {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  justify-content: center;
+  align-items: center;
+
+  input {
+    width: 80%;
+    height: 40px;
+    background: none;
+    text-align: center;
+    color: var(--text-color);
+    font-size: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    outline: none;
+    border-top-style: hidden;
+    border-right-style: hidden;
+    border-left-style: hidden;
+    border-bottom-style: hidden;
+    border: 1px solid var(--border-color);
+    border-radius: 4px;
+  }
+}
+
 .container {
   display: flex;
   flex-direction: column;

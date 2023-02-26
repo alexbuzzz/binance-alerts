@@ -2,6 +2,8 @@ import { watch, computed } from 'vue'
 import store from '@/store'
 import { futLog, futLogCalc } from './futLog'
 import { spotLog, spotLogCalc } from './spotLog'
+// import { futAcc, futAccCalc } from './futAcc'
+// import { spotAcc, spotAccCalc } from './spotAcc'
 
 let futSocket = null
 let futInterval = null
@@ -41,6 +43,7 @@ const startFut = () => {
     ) {
       const res = JSON.parse(event.data).data
       futLog(res)
+      // futAcc(res)
     }
   })
 
