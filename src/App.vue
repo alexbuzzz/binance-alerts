@@ -83,6 +83,7 @@ onBeforeUnmount(() => {
     height: 5px;
     position: relative;
     background: var(--body-bg);
+    // overflow: scroll;
 
     #resize-handler {
       position: absolute;
@@ -97,6 +98,7 @@ onBeforeUnmount(() => {
   #accumulator {
     background: var(--body-bg);
     flex: 1;
+    // overflow: scroll;
   }
 }
 </style>

@@ -7,14 +7,12 @@ const store = createStore({
       logHeight: '100px',
       isDark: false,
       showClickerButtons: true,
-      logLimit: 20,
       aggTime: 500,
       selectedDirection: 'any',
       selectedMarket: 'both',
       selectedSound: 'sound2',
       tickersList: 'BTCUSDT,100\nETHUSDT,100',
-      alertLogList: [],
-      alertAccList: [],
+      commonLogAlerts: [],
     }
   },
   mutations: {

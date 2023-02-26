@@ -59,30 +59,9 @@
   font-weight: normal;
 }
 
-/* width */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
-}
-
-/* Track */
-::-webkit-scrollbar-track {
-  background: none;
-}
-
-/* Handle */
-::-webkit-scrollbar-thumb {
-  background: var(--button-bg-2);
-  border-radius: 5px;
-}
-
-::-webkit-scrollbar-thumb:hover {
-  background: var(--content-bg-hover);
-}
-
-/* Corner */
-::-webkit-scrollbar-corner {
-  background: var(--body-bg);
+  display: none;
+  scrollbar-width: none;
 }
 
 body {

@@ -54,14 +54,6 @@ const onSoundSelect = () => {
       />
     </span>
     <span>
-      Log limit
-      <input
-        type="text"
-        v-model="store.state.logLimit"
-        @input="store.commit('saveSettings')"
-      />
-    </span>
-    <span>
       Agg time
       <input
         type="text"
