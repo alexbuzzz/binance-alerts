@@ -54,10 +54,18 @@ const onSoundSelect = () => {
       />
     </span>
     <span>
-      Agg time
+      Agg time (ms)
       <input
         type="text"
         v-model="store.state.aggTime"
+        @input="store.commit('saveSettings')"
+      />
+    </span>
+    <span>
+      Remove after (s)
+      <input
+        type="text"
+        v-model="store.state.removeAfter"
         @input="store.commit('saveSettings')"
       />
     </span>

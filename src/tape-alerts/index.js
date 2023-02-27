@@ -1,14 +1,13 @@
 import { watch, computed } from 'vue'
 import store from '@/store'
-import { futLog, futLogCalc } from './futLog'
-import { spotLog, spotLogCalc } from './spotLog'
-// import { futAcc, futAccCalc } from './futAcc'
-// import { spotAcc, spotAccCalc } from './spotAcc'
+import { log, logCalc } from './log'
+import { acc, accCalc, cleaner } from './acc'
 
 let futSocket = null
 let futInterval = null
 let spotSocket = null
 let spotInterval = null
+let cleanerInterval = null
 let sender = null
 
 // Convert textarea to object
@@ -42,8 +41,8 @@ const startFut = () => {
       store.state.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
-      futLog(res)
-      // futAcc(res)
+      log(res)
+      acc(res)
     }
   })
 
@@ -52,7 +51,8 @@ const startFut = () => {
       store.state.selectedMarket == 'fut' ||
       store.state.selectedMarket == 'both'
     ) {
-      futLogCalc(tickers)
+      logCalc(tickers, 'F')
+      accCalc(tickers, 'F')
     }
   }, store.state.aggTime)
 }
@@ -77,7 +77,8 @@ const startSpot = () => {
       store.state.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
-      spotLog(res)
+      log(res)
+      acc(res)
     }
   })
 
@@ -86,7 +87,8 @@ const startSpot = () => {
       store.state.selectedMarket == 'spot' ||
       store.state.selectedMarket == 'both'
     ) {
-      spotLogCalc(tickers)
+      logCalc(tickers, 'S')
+      accCalc(tickers, 'S')
     }
   }, store.state.aggTime)
 }
@@ -95,12 +97,14 @@ const startSpot = () => {
 const stoptFut = () => {
   futSocket.close()
   clearInterval(futInterval)
+  clearInterval(cleanerInterval)
 }
 
 // Stop SPOT stream
 const stoptSpot = () => {
   spotSocket.close()
   clearInterval(spotInterval)
+  clearInterval(cleanerInterval)
 }
 
 // Start Sender stream
@@ -112,6 +116,11 @@ const startSender = () => {
 const stopSender = () => {
   sender.close()
 }
+
+// Cleaner
+cleanerInterval = setInterval(() => {
+  cleaner()
+}, store.state.aggTime)
 
 // Sender
 const openDom = (symbol, domNumber) => {

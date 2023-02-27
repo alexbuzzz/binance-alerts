@@ -8,20 +8,16 @@ const store = createStore({
       isDark: false,
       showClickerButtons: true,
       aggTime: 500,
+      removeAfter: 5,
       selectedDirection: 'any',
       selectedMarket: 'both',
       selectedSound: 'sound2',
       tickersList: 'BTCUSDT,100\nETHUSDT,100',
       commonLogAlerts: [],
-      commonAccAlerts: [
-        {
-          symbol: 'ADAUSDT',
-          time: '00000000',
-          market: 'F',
-          direction: 'L',
-          count: 2,
-        },
-      ],
+      commonAccAlerts: {
+        // ADAUSDTFL: [1677500050, 1677500050, 1677500050],
+        // BTCUSDTFS: [1677500050, 1677500050, 1677500050, 1677500050],
+      },
     }
   },
   mutations: {

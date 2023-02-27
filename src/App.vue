@@ -100,6 +100,7 @@ onBeforeUnmount(() => {
 
   input {
     width: 80%;
+    max-width: 200px;
     height: 40px;
     background: none;
     text-align: center;

@@ -3,9 +3,9 @@ import playSound from './sound'
 
 let commonLogAlerts = store.state.commonLogAlerts
 
-let tempSpotData = {}
+let tempData = {}
 
-const spotLog = (res) => {
+const log = (res) => {
   const symbol = res.s
   const price = res.p
   const size = res.q
@@ -16,21 +16,20 @@ const spotLog = (res) => {
     quoteSize = quoteSize * -1
   }
   // Fill up an object
-  if (tempSpotData[symbol]) {
-    tempSpotData[symbol].push({ size: quoteSize, price: price })
+  if (tempData[symbol]) {
+    tempData[symbol].push({ size: quoteSize, price: price })
   } else {
-    tempSpotData[symbol] = [{ size: quoteSize, price: price }]
+    tempData[symbol] = [{ size: quoteSize, price: price }]
   }
 }
 
-const spotLogCalc = (tickers) => {
+const logCalc = (tickers, market) => {
   const directions = {}
 
   // Define directions
-  Object.keys(tempSpotData).forEach((key) => {
+  Object.keys(tempData).forEach((key) => {
     if (
-      tempSpotData[key][0].price <=
-      tempSpotData[key][tempSpotData[key].length - 1].price
+      tempData[key][0].price <= tempData[key][tempData[key].length - 1].price
     ) {
       directions[key] = 'long'
     } else {
@@ -39,13 +38,13 @@ const spotLogCalc = (tickers) => {
   })
 
   // Take and summ trades with specific direction
-  Object.keys(tempSpotData).forEach((key) => {
+  Object.keys(tempData).forEach((key) => {
     if (
       directions[key] == 'long' &&
       (store.state.selectedDirection == 'long' ||
         store.state.selectedDirection == 'any')
     ) {
-      const sum = tempSpotData[key].reduce((acc, val) => {
+      const sum = tempData[key].reduce((acc, val) => {
         if (val.size > 0) {
           return acc + val.size
         } else {
@@ -65,7 +64,7 @@ const spotLogCalc = (tickers) => {
           symbol: key,
           size: sum,
           direction: 'L',
-          market: '',
+          market: market,
           time: `${(h = h < 10 ? '0' + h : h)}:${(m =
             m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
         })
@@ -78,7 +77,7 @@ const spotLogCalc = (tickers) => {
         store.state.selectedDirection == 'any')
     ) {
       const sum = Math.abs(
-        tempSpotData[key].reduce((acc, val) => {
+        tempData[key].reduce((acc, val) => {
           if (val.size <= 0) {
             return acc - val.size
           } else {
@@ -98,7 +97,7 @@ const spotLogCalc = (tickers) => {
           symbol: key,
           size: sum,
           direction: 'S',
-          market: '',
+          market: market,
           time: `${(h = h < 10 ? '0' + h : h)}:${(m =
             m < 10 ? '0' + m : m)}:${(s = s < 10 ? '0' + s : s)}`,
         })
@@ -110,7 +109,7 @@ const spotLogCalc = (tickers) => {
     }
   })
 
-  tempSpotData = {}
+  tempData = {}
 }
 
-export { spotLog, spotLogCalc }
+export { log, logCalc }

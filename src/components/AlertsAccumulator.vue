@@ -16,33 +16,37 @@ const copyToClipboard = (symbol) => {
 <template>
   <div class="log-wrapper">
     <ul>
-      <li v-for="alert in alerts" :key="alert">
-        <div class="list-item" @click="copyToClipboard(alert.symbol)">
+      <li v-for="(val, key) in alerts" :key="key">
+        <div
+          class="list-item"
+          v-if="val.length > 1"
+          @click="copyToClipboard(key.slice(0, -2))"
+        >
           <div class="readings">
             <span
               class="count"
-              v-if="alert.direction === 'L'"
+              v-if="key.slice(-1) === 'L'"
               style="background: #459a45"
-              >{{ alert.count }}</span
+              >{{ val.length }}</span
             >
             <span class="count" v-else style="background: #ff5454">
-              {{ alert.count }}</span
+              {{ val.length }}</span
             >
-            <span class="name">{{ alert.symbol }} {{ alert.market }}</span>
+            <span class="name">{{ key.slice(0, -2) }}</span>
 
-            <span class="time">{{ alert.time }}</span>
+            <span class="market">{{ key.slice(-2, -1) }}</span>
           </div>
           <div class="buttons" v-if="store.state.showClickerButtons">
-            <div class="dom-btn" @click="streams.openDom(alert.symbol, 1)">
+            <div class="dom-btn" @click="streams.openDom(key.slice(0, -2), 1)">
               1
             </div>
-            <div class="dom-btn" @click="streams.openDom(alert.symbol, 2)">
+            <div class="dom-btn" @click="streams.openDom(key.slice(0, -2), 2)">
               2
             </div>
-            <div class="dom-btn" @click="streams.openDom(alert.symbol, 3)">
+            <div class="dom-btn" @click="streams.openDom(key.slice(0, -2), 3)">
               3
             </div>
-            <div class="dom-btn" @click="streams.openDom(alert.symbol, 4)">
+            <div class="dom-btn" @click="streams.openDom(key.slice(0, -2), 4)">
               4
             </div>
           </div>
@@ -55,38 +59,11 @@ const copyToClipboard = (symbol) => {
 .log-wrapper {
   height: 100%;
   overflow: scroll;
-  button {
-    margin: 8px;
-    padding: 4px 8px;
-    background: none;
-    color: var(--text-color);
-    border: 1px solid var(--border-color);
-    border-radius: 4px;
-    cursor: pointer;
-
-    &:hover {
-      background: var(--button-bg-hover);
-    }
-  }
-
-  input[type='checkbox'] {
-    transform: scale(1.4);
-    vertical-align: middle;
-  }
 
   ul {
     list-style-type: none;
     margin: 0;
     padding: 0;
-  }
-
-  .header {
-    display: flex;
-    justify-content: space-between;
-
-    button {
-      padding: 8px 16px;
-    }
   }
 
   .list-item {
@@ -111,6 +88,7 @@ const copyToClipboard = (symbol) => {
         border-radius: 4px;
         margin-top: -5px;
         color: white;
+        font-size: 16px;
       }
     }
 

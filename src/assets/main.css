@@ -26,3 +26,8 @@ button {
 button:hover {
   background: var(--button-bg-hover);
 }
+
+input[type='checkbox'] {
+  transform: scale(1.4);
+  vertical-align: middle;
+}
