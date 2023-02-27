@@ -20,9 +20,14 @@ const switchToDark = () => {
   store.commit('saveSettings')
 }
 
-const onSoundSelect = () => {
+const onLogSoundSelect = () => {
   store.commit('saveSettings')
-  store.commit('playSound')
+  store.commit('playLogSound')
+}
+
+const onAccSoundSelect = () => {
+  store.commit('saveSettings')
+  store.commit('playAccSound')
 }
 </script>
 <template>
@@ -52,6 +57,50 @@ const onSoundSelect = () => {
         v-model="store.state.showClickerButtons"
         @change="store.commit('saveSettings')"
       />
+    </span>
+    <span>
+      Play log alerts
+      <input
+        type="checkbox"
+        v-model="store.state.playLogAlerts"
+        @change="store.commit('saveSettings')"
+      />
+    </span>
+    <span>
+      <select v-model="store.state.selectedLogSound" @change="onLogSoundSelect">
+        <option value="sound1">Sound 1</option>
+        <option value="sound2">Sound 2</option>
+        <option value="sound3">Sound 3</option>
+        <option value="sound4">Sound 4</option>
+        <option value="sound5">Sound 5</option>
+        <option value="sound6">Sound 6</option>
+        <option value="sound7">Sound 7</option>
+        <option value="sound8">Sound 8</option>
+        <option value="sound9">Sound 9</option>
+        <option value="sound10">Sound 10</option>
+      </select>
+    </span>
+    <span>
+      Play acc alerts
+      <input
+        type="checkbox"
+        v-model="store.state.playAccAlerts"
+        @change="store.commit('saveSettings')"
+      />
+    </span>
+    <span>
+      <select v-model="store.state.selectedAccSound" @change="onAccSoundSelect">
+        <option value="sound1">Sound 1</option>
+        <option value="sound2">Sound 2</option>
+        <option value="sound3">Sound 3</option>
+        <option value="sound4">Sound 4</option>
+        <option value="sound5">Sound 5</option>
+        <option value="sound6">Sound 6</option>
+        <option value="sound7">Sound 7</option>
+        <option value="sound8">Sound 8</option>
+        <option value="sound9">Sound 9</option>
+        <option value="sound10">Sound 10</option>
+      </select>
     </span>
     <span>
       Agg time (ms)
@@ -90,21 +139,33 @@ const onSoundSelect = () => {
       </select>
     </span>
     <span>
-      <select v-model="store.state.selectedSound" @change="onSoundSelect">
-        <option value="sound1">Sound 1</option>
-        <option value="sound2">Sound 2</option>
-        <option value="sound3">Sound 3</option>
-        <option value="sound4">Sound 4</option>
-        <option value="sound5">Sound 5</option>
-        <option value="sound6">Sound 6</option>
-        <option value="sound7">Sound 7</option>
-        <option value="sound8">Sound 8</option>
-        <option value="sound9">Sound 9</option>
-        <option value="sound10">Sound 10</option>
-      </select>
+      Use all market
+      <input
+        type="checkbox"
+        v-model="store.state.useAllMarket"
+        @change="store.commit('saveSettings')"
+      />
     </span>
     <span>
+      All market size
+      <input
+        type="text"
+        v-model="store.state.allMarketSize"
+        @input="store.commit('saveSettings')"
+      />
+    </span>
+    <span>
+      Exceptions
       <textarea
+        class="exceptions"
+        v-model="store.state.exceptions"
+        @input="store.commit('saveSettings')"
+      ></textarea>
+    </span>
+    <span>
+      Own tickers list
+      <textarea
+        class="tickers-list"
         v-model="store.state.tickersList"
         @input="store.commit('saveSettings')"
       ></textarea>
@@ -145,6 +206,7 @@ select {
   right: 0;
   width: 200px;
   height: 100%;
+  overflow: scroll;
   background-color: var(--menu-background);
   padding-top: 3rem;
   opacity: 0;
@@ -184,7 +246,6 @@ select {
 
     textarea {
       width: 160px;
-      height: 250px;
       background: var(--menu-background);
       outline: none;
       color: var(--text-color);
@@ -193,6 +254,13 @@ select {
       box-sizing: border-box;
       padding: 8px;
       text-align: center;
+      margin-top: 4px;
+    }
+    .exceptions {
+      height: 100px;
+    }
+    .tickers-list {
+      height: 250px;
     }
   }
 }

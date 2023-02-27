@@ -11,13 +11,16 @@ const store = createStore({
       removeAfter: 5,
       selectedDirection: 'any',
       selectedMarket: 'both',
-      selectedSound: 'sound2',
+      playLogAlerts: true,
+      selectedLogSound: 'sound2',
+      playAccAlerts: true,
+      selectedAccSound: 'sound2',
+      useAllMarket: true,
+      allMarketSize: 100,
       tickersList: 'BTCUSDT,100\nETHUSDT,100',
+      exceptions: 'BTCUSDT,100\nETHUSDT,100\nBTCBUSD,100\nETHBUSD,100',
       commonLogAlerts: [],
-      commonAccAlerts: {
-        // ADAUSDTFL: [1677500050, 1677500050, 1677500050],
-        // BTCUSDTFS: [1677500050, 1677500050, 1677500050, 1677500050],
-      },
+      commonAccAlerts: {},
     }
   },
   mutations: {
@@ -33,8 +36,12 @@ const store = createStore({
       localStorage.setItem('store', JSON.stringify(this.state))
     },
 
-    playSound(state) {
-      play(state.selectedSound)
+    playLogSound(state) {
+      play(state.selectedLogSound)
+    },
+
+    playAccSound(state) {
+      play(state.selectedAccSound)
     },
   },
 })

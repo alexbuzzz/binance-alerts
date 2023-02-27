@@ -1,8 +1,44 @@
 <script setup>
 import store from '@/store'
-import { computed } from 'vue'
+import { computed, watch } from 'vue'
 import streams from '@/tape-alerts'
-const alerts = store.state.commonAccAlerts
+import playSound from '../tape-alerts/sound'
+
+const storeAlerts = store.state.commonAccAlerts
+
+// Sort object
+const sortedAlerts = computed(() => {
+  const alerts = Object.entries(storeAlerts).map(([key, val]) => ({
+    key,
+    val,
+  }))
+
+  alerts.sort((a, b) => b.val.length - a.val.length)
+
+  const sortedObject = {}
+  alerts.forEach(({ key, val }) => {
+    sortedObject[key] = val
+  })
+
+  return sortedObject
+})
+
+// Play sound
+watch(
+  () => {
+    const arrLengths = Object.values(storeAlerts).map((val) => {
+      return Array.isArray(val) && val.length > 0 ? val.length : undefined
+    })
+    return arrLengths
+  },
+  (newLengths, oldLengths) => {
+    newLengths.forEach((newLength, index) => {
+      if (newLength && newLength > oldLengths[index]) {
+        playSound(store.state.selectedAccSound)
+      }
+    })
+  }
+)
 
 const copyToClipboard = (symbol) => {
   const dummy = document.createElement('textarea')
@@ -16,7 +52,7 @@ const copyToClipboard = (symbol) => {
 <template>
   <div class="log-wrapper">
     <ul>
-      <li v-for="(val, key) in alerts" :key="key">
+      <li v-for="(val, key, index) in sortedAlerts" :key="index">
         <div
           class="list-item"
           v-if="val.length > 1"

@@ -1,5 +1,4 @@
 import store from '@/store'
-import playSound from './sound'
 
 let commonAccAlerts = store.state.commonAccAlerts
 
