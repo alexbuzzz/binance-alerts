@@ -5,8 +5,9 @@ import streams from '@/tape-alerts'
 const isRunning = ref(false)
 const buttonText = ref('Start')
 
-const startStop = () => {
+const startStop = async () => {
   if (!isRunning.value) {
+    await streams.getMarketTickers()
     streams.startFut()
     streams.startSpot()
     isRunning.value = true

@@ -12,19 +12,19 @@ const store = createStore({
       selectedDirection: 'any',
       selectedMarket: 'both',
       playLogAlerts: true,
-      selectedLogSound: 'sound2',
+      selectedLogSound: 'sound3',
       playAccAlerts: true,
-      selectedAccSound: 'sound2',
+      selectedAccSound: 'sound4',
       useAllMarket: true,
-      allMarketSize: 100,
-      tickersList: 'BTCUSDT,100\nETHUSDT,100',
-      exceptions: 'BTCUSDT,100\nETHUSDT,100\nBTCBUSD,100\nETHBUSD,100',
+      allMarketSize: 50,
+      tickersList: 'BTCUSDT,0\nETHUSDT,0',
+      exceptions: 'BTCUSDT\nETHUSDT\nBTCBUSD\nETHBUSD',
       commonLogAlerts: [],
       commonAccAlerts: {},
     }
   },
   mutations: {
-    initialiseStore(state) {
+    initialiseStore() {
       const savedState = JSON.parse(localStorage.getItem('store'))
 
       if (savedState) {

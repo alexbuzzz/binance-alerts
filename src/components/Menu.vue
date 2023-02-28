@@ -138,14 +138,14 @@ const onAccSoundSelect = () => {
         <option value="both">BOTH</option>
       </select>
     </span>
-    <span>
+    <!-- <span>
       Use all market
       <input
         type="checkbox"
         v-model="store.state.useAllMarket"
         @change="store.commit('saveSettings')"
       />
-    </span>
+    </span> -->
     <span>
       All market size
       <input
@@ -154,7 +154,7 @@ const onAccSoundSelect = () => {
         @input="store.commit('saveSettings')"
       />
     </span>
-    <span>
+    <!-- <span>
       Exceptions
       <textarea
         class="exceptions"
@@ -169,7 +169,7 @@ const onAccSoundSelect = () => {
         v-model="store.state.tickersList"
         @input="store.commit('saveSettings')"
       ></textarea>
-    </span>
+    </span> -->
   </div>
 </template>
 <style lang="scss" scoped>

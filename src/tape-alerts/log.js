@@ -58,7 +58,9 @@ const logCalc = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        playSound(store.state.selectedLogSound)
+        if (store.state.playLogAlerts) {
+          playSound(store.state.selectedLogSound)
+        }
 
         commonLogAlerts.unshift({
           symbol: key,
@@ -91,7 +93,9 @@ const logCalc = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        playSound(store.state.selectedLogSound)
+        if (store.state.playLogAlerts) {
+          playSound(store.state.selectedLogSound)
+        }
 
         commonLogAlerts.unshift({
           symbol: key,

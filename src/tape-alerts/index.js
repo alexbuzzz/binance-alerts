@@ -1,4 +1,5 @@
 import { watch, computed } from 'vue'
+import axios from 'axios'
 import store from '@/store'
 import { log, logCalc } from './log'
 import { acc, accCalc, cleaner } from './acc'
@@ -9,21 +10,52 @@ let spotSocket = null
 let spotInterval = null
 let cleanerInterval = null
 let sender = null
+let tickers = {}
+
+const exceptions = ['BTCUSDT', 'ETHUSDT', 'BTCBUSD', 'ETHBUSD']
 
 // Convert textarea to object
 const tickersList = computed(() => store.state.tickersList)
-const tickers = {}
 
-const createTickersObject = (val) => {
-  val.split('\n').forEach((pair) => {
-    const [key, value] = pair.split(',')
-    tickers[key] = Number(value)
-  })
+// const createTickersObject = (val) => {
+//   val.split('\n').forEach((pair) => {
+//     const [key, value] = pair.split(',')
+//     tickers[key] = Number(value)
+//   })
+// }
+
+// if (store.state.useAllMarket) {
+//   tickers = getTickers()
+// } else {
+//   watch(tickersList, (newVal) => {
+//     createTickersObject(newVal)
+//   })
+// }
+
+// All market tickers
+const getMarketTickers = async () => {
+  try {
+    const res = await axios.get('https://fapi.binance.com/fapi/v1/ticker/price')
+
+    if (store.state.useAllMarket) {
+      res.data.forEach((element) => {
+        if (
+          !element.symbol.includes('_') &&
+          !element.symbol.includes('DOM') &&
+          !exceptions.includes(element.symbol)
+        ) {
+          tickers[element.symbol] = store.state.allMarketSize
+        }
+      })
+    } else {
+      // *
+    }
+  } catch (error) {
+    console.error(error)
+  }
 }
 
-watch(tickersList, (newVal) => {
-  createTickersObject(newVal)
-})
+console.log(tickers)
 
 // Start FUT stream
 const startFut = () => {
@@ -137,6 +169,7 @@ const openDom = (symbol, domNumber) => {
 }
 
 export default {
+  getMarketTickers,
   startFut,
   startSpot,
   stoptFut,

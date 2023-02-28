@@ -16,8 +16,10 @@ const checkPassword = () => {
     loggedIn.value = true
   }
 }
+
 onMounted(() => {
   checkPassword()
+
   // Get all saved data fron locastorage
   store.commit('initialiseStore')
 

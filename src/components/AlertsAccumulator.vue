@@ -34,7 +34,9 @@ watch(
   (newLengths, oldLengths) => {
     newLengths.forEach((newLength, index) => {
       if (newLength && newLength > oldLengths[index]) {
-        playSound(store.state.selectedAccSound)
+        if (store.state.playAccAlerts) {
+          playSound(store.state.selectedAccSound)
+        }
       }
     })
   }
