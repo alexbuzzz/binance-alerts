@@ -56,15 +56,15 @@ onBeforeUnmount(() => {
   <Menu v-if="loggedIn" />
 
   <div class="cols">
-    <TwoVerticalSpaces :section-name="left">
+    <TwoVerticalSpaces name="leftVertical">
       <template v-slot:topSection><AlertsLog /></template>
       <template v-slot:bottomSection><AlertsAccumulator /></template>
     </TwoVerticalSpaces>
 
-    <!-- <TwoVerticalSpaces :section-name="right">
+    <TwoVerticalSpaces name="rightVertical">
       <template v-slot:topSection><AlertsLog /></template>
       <template v-slot:bottomSection><AlertsAccumulator /></template>
-    </TwoVerticalSpaces> -->
+    </TwoVerticalSpaces>
   </div>
 </template>
 

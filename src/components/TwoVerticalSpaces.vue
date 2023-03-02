@@ -1,16 +1,12 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref } from 'vue'
 import store from '@/store'
 import AlertsLog from './AlertsLog.vue'
 import AlertsAccumulator from './AlertsAccumulator.vue'
 
-import { defineProps } from 'vue'
-
 const props = defineProps({
-  sectionName: String,
+  name: String,
 })
-
-console.log(props.sectionName)
 
 const logSectionRef = ref(null)
 const handlerRef = ref(null)
@@ -21,7 +17,7 @@ onMounted(() => {
   const logSection = logSectionRef.value
   const handler = handlerRef.value
 
-  logSection.style.height = store.state.settings.logHeight
+  logSection.style.height = JSON.parse(localStorage.getItem(props.name))
 
   const mousemove = (e) => {
     const block = logSection?.getBoundingClientRect()
@@ -30,8 +26,7 @@ onMounted(() => {
   }
 
   const mouseup = () => {
-    store.state.settings.logHeight = logSection.style.height
-    store.commit('saveSettings')
+    localStorage.setItem(props.name, JSON.stringify(logSection.style.height))
     window.removeEventListener('mousemove', mousemove)
     window.removeEventListener('mouseup', mouseup)
   }
@@ -62,7 +57,7 @@ onMounted(() => {
   display: flex;
   flex-direction: column;
   min-height: calc(100vh - 50px);
-  min-width: 100%;
+  // min-width: 100%;
 
   #log {
     height: 5px;
