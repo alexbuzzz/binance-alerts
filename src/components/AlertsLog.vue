@@ -32,7 +32,7 @@ const copyToClipboard = (symbol) => {
 
             <span class="time">{{ alert.time }}</span>
           </div>
-          <div class="buttons" v-if="store.state.showClickerButtons">
+          <div class="buttons" v-if="store.state.settings.showClickerButtons">
             <div class="dom-btn" @click="streams.openDom(alert.symbol, 1)">
               1
             </div>

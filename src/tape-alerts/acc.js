@@ -44,8 +44,8 @@ const accCalc = (tickers, market) => {
   Object.keys(tempData[market]).forEach((key) => {
     if (
       directions[key] == 'long' &&
-      (store.state.selectedDirection == 'long' ||
-        store.state.selectedDirection == 'any')
+      (store.state.settings.selectedDirection == 'long' ||
+        store.state.settings.selectedDirection == 'any')
     ) {
       const sum = tempData[market][key].reduce((acc, val) => {
         if (val.size > 0) {
@@ -70,8 +70,8 @@ const accCalc = (tickers, market) => {
 
     if (
       directions[key] == 'short' &&
-      (store.state.selectedDirection == 'short' ||
-        store.state.selectedDirection == 'any')
+      (store.state.settings.selectedDirection == 'short' ||
+        store.state.settings.selectedDirection == 'any')
     ) {
       const sum = Math.abs(
         tempData[market][key].reduce((acc, val) => {
@@ -103,8 +103,8 @@ const accCalc = (tickers, market) => {
 const accCalcMode2 = (tickers, market) => {
   Object.keys(tempData[market]).forEach((key) => {
     if (
-      store.state.selectedDirection == 'long' ||
-      store.state.selectedDirection == 'any'
+      store.state.settings.selectedDirection == 'long' ||
+      store.state.settings.selectedDirection == 'any'
     ) {
       const sum = tempData[market][key].reduce((acc, val) => {
         if (val.size > 0) {
@@ -128,8 +128,8 @@ const accCalcMode2 = (tickers, market) => {
     }
 
     if (
-      store.state.selectedDirection == 'short' ||
-      store.state.selectedDirection == 'any'
+      store.state.settings.selectedDirection == 'short' ||
+      store.state.settings.selectedDirection == 'any'
     ) {
       const sum = Math.abs(
         tempData[market][key].reduce((acc, val) => {
@@ -167,7 +167,7 @@ const cleaner = () => {
     const len = commonAccAlerts[key].length
     if (
       currTime - commonAccAlerts[key][len - 1] >=
-      store.state.removeAfter * 1000
+      store.state.settings.removeAfter * 1000
     ) {
       commonAccAlerts[key].length = 0
     }

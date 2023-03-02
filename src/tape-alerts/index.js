@@ -19,14 +19,14 @@ const getMarketTickers = async () => {
   try {
     const res = await axios.get('https://fapi.binance.com/fapi/v1/ticker/price')
 
-    if (store.state.useAllMarket) {
+    if (store.state.settings.useAllMarket) {
       res.data.forEach((element) => {
         if (
           !element.symbol.includes('_') &&
           !element.symbol.includes('DOM') &&
           !exceptions.includes(element.symbol)
         ) {
-          tickers[element.symbol] = store.state.allMarketSize
+          tickers[element.symbol] = store.state.settings.allMarketSize
         }
       })
     } else {
@@ -49,8 +49,8 @@ const startFut = () => {
 
   futSocket.addEventListener('message', (event) => {
     if (
-      store.state.selectedMarket == 'fut' ||
-      store.state.selectedMarket == 'both'
+      store.state.settings.selectedMarket == 'fut' ||
+      store.state.settings.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
       log(res, 'F')
@@ -60,19 +60,19 @@ const startFut = () => {
 
   futInterval = setInterval(() => {
     if (
-      store.state.selectedMarket == 'fut' ||
-      store.state.selectedMarket == 'both'
+      store.state.settings.selectedMarket == 'fut' ||
+      store.state.settings.selectedMarket == 'both'
     ) {
-      if (store.state.sizeMode == 'sizeMode1') {
+      if (store.state.settings.sizeMode == 'sizeMode1') {
         logCalc(tickers, 'F')
         accCalc(tickers, 'F')
       }
-      if (store.state.sizeMode == 'sizeMode2') {
+      if (store.state.settings.sizeMode == 'sizeMode2') {
         logCalcMode2(tickers, 'F')
         accCalcMode2(tickers, 'F')
       }
     }
-  }, store.state.aggTime)
+  }, store.state.settings.aggTime)
 }
 
 // Start SPOT stream
@@ -91,8 +91,8 @@ const startSpot = () => {
 
   spotSocket.addEventListener('message', (event) => {
     if (
-      store.state.selectedMarket == 'spot' ||
-      store.state.selectedMarket == 'both'
+      store.state.settings.selectedMarket == 'spot' ||
+      store.state.settings.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
       log(res, 'S')
@@ -102,19 +102,19 @@ const startSpot = () => {
 
   spotInterval = setInterval(() => {
     if (
-      store.state.selectedMarket == 'spot' ||
-      store.state.selectedMarket == 'both'
+      store.state.settings.selectedMarket == 'spot' ||
+      store.state.settings.selectedMarket == 'both'
     ) {
-      if (store.state.sizeMode == 'sizeMode1') {
+      if (store.state.settings.sizeMode == 'sizeMode1') {
         logCalc(tickers, 'S')
         accCalc(tickers, 'S')
       }
-      if (store.state.sizeMode == 'sizeMode2') {
+      if (store.state.settings.sizeMode == 'sizeMode2') {
         logCalcMode2(tickers, 'S')
         accCalcMode2(tickers, 'S')
       }
     }
-  }, store.state.aggTime)
+  }, store.state.settings.aggTime)
 }
 
 // Stop FUT stream

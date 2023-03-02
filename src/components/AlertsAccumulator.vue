@@ -34,8 +34,8 @@ watch(
   (newLengths, oldLengths) => {
     newLengths.forEach((newLength, index) => {
       if (newLength && newLength > oldLengths[index]) {
-        if (store.state.playAccAlerts) {
-          playSound(store.state.selectedAccSound)
+        if (store.state.settings.playAccAlerts) {
+          playSound(store.state.settings.selectedAccSound)
         }
       }
     })
@@ -74,7 +74,7 @@ const copyToClipboard = (symbol) => {
 
             <span class="market">{{ key.slice(-2, -1) }}</span>
           </div>
-          <div class="buttons" v-if="store.state.showClickerButtons">
+          <div class="buttons" v-if="store.state.settings.showClickerButtons">
             <div class="dom-btn" @click="streams.openDom(key.slice(0, -2), 1)">
               1
             </div>

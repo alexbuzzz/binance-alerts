@@ -45,8 +45,8 @@ const logCalc = (tickers, market) => {
   Object.keys(tempData[market]).forEach((key) => {
     if (
       directions[key] == 'long' &&
-      (store.state.selectedDirection == 'long' ||
-        store.state.selectedDirection == 'any')
+      (store.state.settings.selectedDirection == 'long' ||
+        store.state.settings.selectedDirection == 'any')
     ) {
       const sum = tempData[market][key].reduce((acc, val) => {
         if (val.size > 0) {
@@ -62,8 +62,8 @@ const logCalc = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        if (store.state.playLogAlerts) {
-          playSound(store.state.selectedLogSound)
+        if (store.state.settings.playLogAlerts) {
+          playSound(store.state.settings.selectedLogSound)
         }
 
         commonLogAlerts.unshift({
@@ -83,8 +83,8 @@ const logCalc = (tickers, market) => {
 
     if (
       directions[key] == 'short' &&
-      (store.state.selectedDirection == 'short' ||
-        store.state.selectedDirection == 'any')
+      (store.state.settings.selectedDirection == 'short' ||
+        store.state.settings.selectedDirection == 'any')
     ) {
       const sum = Math.abs(
         tempData[market][key].reduce((acc, val) => {
@@ -101,8 +101,8 @@ const logCalc = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        if (store.state.playLogAlerts) {
-          playSound(store.state.selectedLogSound)
+        if (store.state.settings.playLogAlerts) {
+          playSound(store.state.settings.selectedLogSound)
         }
 
         commonLogAlerts.unshift({
@@ -127,8 +127,8 @@ const logCalc = (tickers, market) => {
 const logCalcMode2 = (tickers, market) => {
   Object.keys(tempData[market]).forEach((key) => {
     if (
-      store.state.selectedDirection == 'long' ||
-      store.state.selectedDirection == 'any'
+      store.state.settings.selectedDirection == 'long' ||
+      store.state.settings.selectedDirection == 'any'
     ) {
       const sum = tempData[market][key].reduce((acc, val) => {
         if (val.size > 0) {
@@ -144,8 +144,8 @@ const logCalcMode2 = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        if (store.state.playLogAlerts) {
-          playSound(store.state.selectedLogSound)
+        if (store.state.settings.playLogAlerts) {
+          playSound(store.state.settings.selectedLogSound)
         }
 
         commonLogAlerts.unshift({
@@ -164,8 +164,8 @@ const logCalcMode2 = (tickers, market) => {
     }
 
     if (
-      store.state.selectedDirection == 'short' ||
-      store.state.selectedDirection == 'any'
+      store.state.settings.selectedDirection == 'short' ||
+      store.state.settings.selectedDirection == 'any'
     ) {
       const sum = Math.abs(
         tempData[market][key].reduce((acc, val) => {
@@ -183,8 +183,8 @@ const logCalcMode2 = (tickers, market) => {
         let m = date.getMinutes()
         let s = date.getSeconds()
 
-        if (store.state.playLogAlerts) {
-          playSound(store.state.selectedLogSound)
+        if (store.state.settings.playLogAlerts) {
+          playSound(store.state.settings.selectedLogSound)
         }
 
         commonLogAlerts.unshift({

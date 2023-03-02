@@ -11,12 +11,12 @@ let isMobileMenuOpen = ref(false)
 onClickOutside(menu, () => (isMobileMenuOpen.value = false))
 
 const switchToDark = () => {
-  let isDark = store.state.isDark
+  let isDark = store.state.settings.isDark
   isDark
     ? document.documentElement.setAttribute('data-theme', 'light')
     : document.documentElement.setAttribute('data-theme', 'dark')
 
-  store.state.isDark = !isDark
+  store.state.settings.isDark = !isDark
   store.commit('saveSettings')
 }
 
@@ -54,7 +54,7 @@ const onAccSoundSelect = () => {
       Show buttons
       <input
         type="checkbox"
-        v-model="store.state.showClickerButtons"
+        v-model="store.state.settings.showClickerButtons"
         @change="store.commit('saveSettings')"
       />
     </span>
@@ -62,12 +62,12 @@ const onAccSoundSelect = () => {
       Play log alerts
       <input
         type="checkbox"
-        v-model="store.state.playLogAlerts"
+        v-model="store.state.settings.playLogAlerts"
         @change="store.commit('saveSettings')"
       />
     </span>
     <span>
-      <select v-model="store.state.selectedLogSound" @change="onLogSoundSelect">
+      <select v-model="store.state.settings.selectedLogSound" @change="onLogSoundSelect">
         <option value="sound1">Sound 1</option>
         <option value="sound2">Sound 2</option>
         <option value="sound3">Sound 3</option>
@@ -84,12 +84,12 @@ const onAccSoundSelect = () => {
       Play acc alerts
       <input
         type="checkbox"
-        v-model="store.state.playAccAlerts"
+        v-model="store.state.settings.playAccAlerts"
         @change="store.commit('saveSettings')"
       />
     </span>
     <span>
-      <select v-model="store.state.selectedAccSound" @change="onAccSoundSelect">
+      <select v-model="store.state.settings.selectedAccSound" @change="onAccSoundSelect">
         <option value="sound1">Sound 1</option>
         <option value="sound2">Sound 2</option>
         <option value="sound3">Sound 3</option>
@@ -106,7 +106,7 @@ const onAccSoundSelect = () => {
       Agg time (ms)
       <input
         type="text"
-        v-model="store.state.aggTime"
+        v-model="store.state.settings.aggTime"
         @input="store.commit('saveSettings')"
       />
     </span>
@@ -114,13 +114,13 @@ const onAccSoundSelect = () => {
       Remove after (s)
       <input
         type="text"
-        v-model="store.state.removeAfter"
+        v-model="store.state.settings.removeAfter"
         @input="store.commit('saveSettings')"
       />
     </span>
     <span>
       <select
-        v-model="store.state.selectedDirection"
+        v-model="store.state.settings.selectedDirection"
         @change="store.commit('saveSettings')"
       >
         <option value="long">Long</option>
@@ -130,7 +130,7 @@ const onAccSoundSelect = () => {
     </span>
     <span>
       <select
-        v-model="store.state.selectedMarket"
+        v-model="store.state.settings.selectedMarket"
         @change="store.commit('saveSettings')"
       >
         <option value="fut">FUT</option>
@@ -140,7 +140,7 @@ const onAccSoundSelect = () => {
     </span>
     <span>
       <select
-        v-model="store.state.sizeMode"
+        v-model="store.state.settings.sizeMode"
         @change="store.commit('saveSettings')"
       >
         <option value="sizeMode1">SIZE MODE 1</option>
@@ -151,7 +151,7 @@ const onAccSoundSelect = () => {
       All market size
       <input
         type="text"
-        v-model="store.state.allMarketSize"
+        v-model="store.state.settings.allMarketSize"
         @input="store.commit('saveSettings')"
       />
     </span>
