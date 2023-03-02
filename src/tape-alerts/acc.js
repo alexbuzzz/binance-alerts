@@ -2,9 +2,12 @@ import store from '@/store'
 
 let commonAccAlerts = store.state.commonAccAlerts
 
-let tempData = {}
+let tempData = {
+  F: {},
+  S: {},
+}
 
-const acc = (res) => {
+const acc = (res, market) => {
   const symbol = res.s
   const price = res.p
   const size = res.q
@@ -15,10 +18,10 @@ const acc = (res) => {
     quoteSize = quoteSize * -1
   }
   // Fill up an object
-  if (tempData[symbol]) {
-    tempData[symbol].push({ size: quoteSize, price: price })
+  if (tempData[market][symbol]) {
+    tempData[market][symbol].push({ size: quoteSize, price: price })
   } else {
-    tempData[symbol] = [{ size: quoteSize, price: price }]
+    tempData[market][symbol] = [{ size: quoteSize, price: price }]
   }
 }
 
@@ -26,9 +29,10 @@ const accCalc = (tickers, market) => {
   const directions = {}
 
   // Define directions
-  Object.keys(tempData).forEach((key) => {
+  Object.keys(tempData[market]).forEach((key) => {
     if (
-      tempData[key][0].price <= tempData[key][tempData[key].length - 1].price
+      tempData[market][key][0].price <=
+      tempData[market][key][tempData[market][key].length - 1].price
     ) {
       directions[key] = 'long'
     } else {
@@ -37,13 +41,13 @@ const accCalc = (tickers, market) => {
   })
 
   // Take and summ trades with specific direction
-  Object.keys(tempData).forEach((key) => {
+  Object.keys(tempData[market]).forEach((key) => {
     if (
       directions[key] == 'long' &&
       (store.state.selectedDirection == 'long' ||
         store.state.selectedDirection == 'any')
     ) {
-      const sum = tempData[key].reduce((acc, val) => {
+      const sum = tempData[market][key].reduce((acc, val) => {
         if (val.size > 0) {
           return acc + val.size
         } else {
@@ -70,8 +74,8 @@ const accCalc = (tickers, market) => {
         store.state.selectedDirection == 'any')
     ) {
       const sum = Math.abs(
-        tempData[key].reduce((acc, val) => {
-          if (val.size <= 0) {
+        tempData[market][key].reduce((acc, val) => {
+          if (val.size < 0) {
             return acc - val.size
           } else {
             return acc
@@ -93,7 +97,65 @@ const accCalc = (tickers, market) => {
     }
   })
 
-  tempData = {}
+  tempData[market] = {}
+}
+
+const accCalcMode2 = (tickers, market) => {
+  Object.keys(tempData[market]).forEach((key) => {
+    if (
+      store.state.selectedDirection == 'long' ||
+      store.state.selectedDirection == 'any'
+    ) {
+      const sum = tempData[market][key].reduce((acc, val) => {
+        if (val.size > 0) {
+          return acc + val.size
+        } else {
+          return acc
+        }
+      }, 0)
+
+      if (sum >= tickers[key]) {
+        const date = new Date()
+        let t = date.getTime()
+
+        // Fill up an object
+        if (commonAccAlerts[key + market + 'L']) {
+          commonAccAlerts[key + market + 'L'].push(t)
+        } else {
+          commonAccAlerts[key + market + 'L'] = [t]
+        }
+      }
+    }
+
+    if (
+      store.state.selectedDirection == 'short' ||
+      store.state.selectedDirection == 'any'
+    ) {
+      const sum = Math.abs(
+        tempData[market][key].reduce((acc, val) => {
+          if (val.size < 0) {
+            return acc - val.size
+          } else {
+            return acc
+          }
+        }, 0)
+      )
+
+      if (sum >= tickers[key]) {
+        const date = new Date()
+        let t = date.getTime()
+
+        // Fill up an object
+        if (commonAccAlerts[key + market + 'S']) {
+          commonAccAlerts[key + market + 'S'].push(t)
+        } else {
+          commonAccAlerts[key + market + 'S'] = [t]
+        }
+      }
+    }
+  })
+
+  tempData[market] = {}
 }
 
 // Cleaner
@@ -112,4 +174,4 @@ const cleaner = () => {
   })
 }
 
-export { acc, accCalc, cleaner }
+export { acc, accCalc, accCalcMode2, cleaner }

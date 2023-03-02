@@ -7,7 +7,7 @@ import store from './store'
 import { onMounted, onBeforeUnmount, ref } from 'vue'
 import streams from '@/tape-alerts'
 
-const loggedIn = ref(false)
+const loggedIn = ref(true)
 const password = ref('')
 const storedPassword = '2064'
 

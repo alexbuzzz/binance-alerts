@@ -16,6 +16,7 @@ const store = createStore({
       playAccAlerts: true,
       selectedAccSound: 'sound4',
       useAllMarket: true,
+      sizeMode: 'sizeMode2',
       allMarketSize: 50,
       tickersList: 'BTCUSDT,0\nETHUSDT,0',
       exceptions: 'BTCUSDT\nETHUSDT\nBTCBUSD\nETHBUSD',

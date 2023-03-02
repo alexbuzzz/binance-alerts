@@ -1,8 +1,8 @@
 import { watch, computed } from 'vue'
 import axios from 'axios'
 import store from '@/store'
-import { log, logCalc } from './log'
-import { acc, accCalc, cleaner } from './acc'
+import { log, logCalc, logCalcMode2 } from './log'
+import { acc, accCalc, accCalcMode2, cleaner } from './acc'
 
 let futSocket = null
 let futInterval = null
@@ -13,24 +13,6 @@ let sender = null
 let tickers = {}
 
 const exceptions = ['BTCUSDT', 'ETHUSDT', 'BTCBUSD', 'ETHBUSD']
-
-// Convert textarea to object
-const tickersList = computed(() => store.state.tickersList)
-
-// const createTickersObject = (val) => {
-//   val.split('\n').forEach((pair) => {
-//     const [key, value] = pair.split(',')
-//     tickers[key] = Number(value)
-//   })
-// }
-
-// if (store.state.useAllMarket) {
-//   tickers = getTickers()
-// } else {
-//   watch(tickersList, (newVal) => {
-//     createTickersObject(newVal)
-//   })
-// }
 
 // All market tickers
 const getMarketTickers = async () => {
@@ -55,8 +37,6 @@ const getMarketTickers = async () => {
   }
 }
 
-console.log(tickers)
-
 // Start FUT stream
 const startFut = () => {
   let futUrl = 'wss://fstream.binance.com/stream?streams='
@@ -73,8 +53,8 @@ const startFut = () => {
       store.state.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
-      log(res)
-      acc(res)
+      log(res, 'F')
+      acc(res, 'F')
     }
   })
 
@@ -83,8 +63,14 @@ const startFut = () => {
       store.state.selectedMarket == 'fut' ||
       store.state.selectedMarket == 'both'
     ) {
-      logCalc(tickers, 'F')
-      accCalc(tickers, 'F')
+      if (store.state.sizeMode == 'sizeMode1') {
+        logCalc(tickers, 'F')
+        accCalc(tickers, 'F')
+      }
+      if (store.state.sizeMode == 'sizeMode2') {
+        logCalcMode2(tickers, 'F')
+        accCalcMode2(tickers, 'F')
+      }
     }
   }, store.state.aggTime)
 }
@@ -109,8 +95,8 @@ const startSpot = () => {
       store.state.selectedMarket == 'both'
     ) {
       const res = JSON.parse(event.data).data
-      log(res)
-      acc(res)
+      log(res, 'S')
+      acc(res, 'S')
     }
   })
 
@@ -119,8 +105,14 @@ const startSpot = () => {
       store.state.selectedMarket == 'spot' ||
       store.state.selectedMarket == 'both'
     ) {
-      logCalc(tickers, 'S')
-      accCalc(tickers, 'S')
+      if (store.state.sizeMode == 'sizeMode1') {
+        logCalc(tickers, 'S')
+        accCalc(tickers, 'S')
+      }
+      if (store.state.sizeMode == 'sizeMode2') {
+        logCalcMode2(tickers, 'S')
+        accCalcMode2(tickers, 'S')
+      }
     }
   }, store.state.aggTime)
 }
