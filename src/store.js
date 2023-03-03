@@ -5,7 +5,6 @@ const store = createStore({
   state() {
     return {
       settings: {
-        logHeight: '100px',
         isDark: false,
         showClickerButtons: true,
         aggTime: 500,

@@ -5,36 +5,35 @@ const props = defineProps({
   name: String,
 })
 
-const topSectionRef = ref(null)
+const leftSectionRef = ref(null)
 const handlerRef = ref(null)
 
 onMounted(() => {
-  // Resize windows
-  let prevY
-  const topSection = topSectionRef.value
+  let prevX
+  const leftSection = leftSectionRef.value
   const handler = handlerRef.value
 
-  topSection.style.height = JSON.parse(
-    localStorage.getItem(props.name + 'Height')
+  leftSection.style.width = JSON.parse(
+    localStorage.getItem(props.name + 'Width')
   )
 
   const mousemove = (e) => {
-    const block = topSection.getBoundingClientRect()
-    topSection.style.height = block.height - (prevY - e.clientY) + 'px'
-    prevY = e.clientY
+    const block = leftSection.getBoundingClientRect()
+    leftSection.style.width = block.width - (prevX - e.clientX) + 'px'
+    prevX = e.clientX
   }
 
   const mouseup = () => {
     localStorage.setItem(
-      props.name + 'Height',
-      JSON.stringify(topSection.style.height)
+      props.name + 'Width',
+      JSON.stringify(leftSection.style.width)
     )
     window.removeEventListener('mousemove', mousemove)
     window.removeEventListener('mouseup', mouseup)
   }
 
   const mousedown = (e) => {
-    prevY = e.clientY
+    prevX = e.clientX
     window.addEventListener('mousemove', mousemove)
     window.addEventListener('mouseup', mouseup)
   }
@@ -44,12 +43,12 @@ onMounted(() => {
 
 <template>
   <div class="container">
-    <div id="top" ref="topSectionRef">
-      <slot name="topSection"></slot>
+    <div id="left" ref="leftSectionRef">
+      <slot name="leftSection"></slot>
       <div id="resize-handler" ref="handlerRef"></div>
     </div>
-    <div id="bottom">
-      <slot name="bottomSection"></slot>
+    <div id="right">
+      <slot name="rightSection"></slot>
     </div>
   </div>
 </template>
@@ -57,29 +56,29 @@ onMounted(() => {
 <style lang="scss" scoped>
 .container {
   display: flex;
-  flex-direction: column;
+  height: 100%;
   min-width: 150px;
+  width: 100%;
 
-  #top {
-    height: 150px;
+  #left {
+    width: 50%;
     position: relative;
     background: var(--body-bg);
-    overflow: scroll;
 
     #resize-handler {
       position: absolute;
-      bottom: 0;
-      height: 5px;
-      cursor: row-resize;
-      width: 100%;
+      top: 0;
+      right: 0;
+      height: 100%;
+      cursor: col-resize;
+      width: 5px;
       background: var(--divider-color);
     }
   }
 
-  #bottom {
+  #right {
     background: var(--body-bg);
     flex: 1;
-    overflow: scroll;
   }
 }
 </style>

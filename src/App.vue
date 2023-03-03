@@ -2,6 +2,7 @@
 import AlertsLog from './components/AlertsLog.vue'
 import AlertsAccumulator from './components/AlertsAccumulator.vue'
 import TwoVerticalSpaces from './components/TwoVerticalSpaces.vue'
+import TwoHorizontalSpaces from './components/TwoHorizontalSpaces.vue'
 import Header from './components/Header.vue'
 import Menu from './components/Menu.vue'
 import store from '@/store'
@@ -55,17 +56,25 @@ onBeforeUnmount(() => {
   <Header v-if="loggedIn" />
   <Menu v-if="loggedIn" />
 
-  <div class="cols">
-    <TwoVerticalSpaces name="leftVertical">
-      <template v-slot:topSection><AlertsLog /></template>
-      <template v-slot:bottomSection><AlertsAccumulator /></template>
-    </TwoVerticalSpaces>
+  <TwoVerticalSpaces name="mainVertical">
+    <template v-slot:topSection>
+      <TwoHorizontalSpaces name="horizontal">
+        <template v-slot:leftSection>
+          <TwoVerticalSpaces name="leftVertical">
+            <template v-slot:topSection>
+              <AlertsLog />
+            </template>
+            <template v-slot:bottomSection>
+              <AlertsAccumulator />
+            </template>
+          </TwoVerticalSpaces>
+        </template>
+        <template v-slot:rightSection>Right</template>
+      </TwoHorizontalSpaces>
+    </template>
 
-    <TwoVerticalSpaces name="rightVertical">
-      <template v-slot:topSection><AlertsLog /></template>
-      <template v-slot:bottomSection><AlertsAccumulator /></template>
-    </TwoVerticalSpaces>
-  </div>
+    <template v-slot:bottomSection>Bottom</template>
+  </TwoVerticalSpaces>
 </template>
 
 <style lang="scss" scoped>
@@ -96,9 +105,5 @@ onBeforeUnmount(() => {
     border: 1px solid var(--border-color);
     border-radius: 4px;
   }
-}
-
-.cols {
-  display: flex;
 }
 </style>
